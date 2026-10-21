@@ -1,0 +1,179 @@
+@page "/admin/productos"
+@page "/admin/productos/{CategoriaFiltro}"
+@layout Shared.AdminLayout
+@inject IProductoService ProductoService
+@inject NavigationManager Nav
+@implements IDisposable
+
+<PageTitle>Productos — TechMundo</PageTitle>
+
+<div class="header-pagina">
+    <h2>Gestión de productos @(CategoriaFiltro is not null ? $"— {CategoriaFiltro}" : "")</h2>
+    <a class="btn-primario" href="/admin/nuevo-producto"><i class="bi bi-plus-lg"></i> Nuevo producto</a>
+</div>
+
+@* Filtro por categoría con NavLink + rutas con parámetro (Unidad 1, Clase 5) *@
+<nav class="filtros-categoria" aria-label="Filtro por categoría">
+    <NavLink href="/admin/productos" Match="NavLinkMatch.All">Todas</NavLink>
+    @foreach (var c in categorias)
+    {
+        <NavLink href="@($"/admin/productos/{c.Nombre.ToLowerInvariant()}")">@c.Nombre</NavLink>
+    }
+</nav>
+
+<div class="filtros">
+    <label class="check-stock-bajo">
+        <input type="checkbox" @bind="soloStockBajo" @bind:after="Recargar" />
+        Solo stock bajo
+    </label>
+
+    <input type="text" placeholder="Buscar por nombre, marca o descripción..." class="form-control"
+           @bind="busqueda" @bind:event="oninput" @bind:after="Recargar" />
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner">Cargando…</div>
+}
+else if (mensajeError is not null)
+{
+    <AlertError Mensaje="@mensajeError" OnCerrar="() => mensajeError = null" />
+}
+else if (productos.Count == 0)
+{
+    <p class="vacio">No hay productos que coincidan con el filtro actual.</p>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var p in productos)
+        {
+            <div class="col-12 col-md-6">
+                <ProductoCard Producto="p"
+                              OnEditar="EditarProducto"
+                              OnToggleDisponible="ToggleDisponible"
+                              OnEliminarSolicitado="SolicitarEliminar" />
+            </div>
+        }
+    </div>
+    <Paginacion PaginaActual="pagina" TotalPaginas="totalPaginas" OnCambio="CambiarPagina" />
+}
+
+@* Modal de confirmación 100% Blazor/CSS — sin JS externo (Unidad 1/4) *@
+<ConfirmDialog Visible="productoAEliminar is not null"
+               Titulo="Eliminar producto"
+               Mensaje='@($"¿Eliminar \"{productoAEliminar?.Nombre}\" del catálogo? Esta acción no se puede deshacer.")'
+               OnConfirmar="ConfirmarEliminar"
+               OnCancelar="() => productoAEliminar = null" />
+
+@code {
+    [Parameter] public string? CategoriaFiltro { get; set; }
+
+    private List<Producto> productos = new();
+    private List<Categoria> categorias = new();
+    private bool isLoading = true;
+    private string? mensajeError;
+    private int pagina = 1;
+    private int totalPaginas;
+    private const int TamanioPagina = 6;
+    private bool soloStockBajo = false;
+    private string busqueda = string.Empty;
+    private Producto? productoAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductoService.OnChange += ManejarCambioExterno;
+        try { categorias = await ProductoService.ObtenerCategorias(); }
+        catch (Exception ex) { mensajeError = $"Error al cargar categorías: {ex.Message}"; }
+        // La lista se carga en OnParametersSetAsync (corre siempre después de este método).
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        pagina = 1;
+        await CargarProductos();
+    }
+
+    private void ManejarCambioExterno() => InvokeAsync(async () =>
+    {
+        await CargarProductos();
+        StateHasChanged();
+    });
+
+    private async Task CargarProductos()
+    {
+        isLoading = true;
+        mensajeError = null;
+        StateHasChanged();
+        try
+        {
+            var categoriaId = string.IsNullOrEmpty(CategoriaFiltro)
+                ? (int?)null
+                : categorias.FirstOrDefault(c => c.Nombre.Equals(CategoriaFiltro, StringComparison.OrdinalIgnoreCase))?.Id;
+
+            var resultado = await ProductoService.ObtenerPaginado(
+                pagina, TamanioPagina, categoriaId, soloStockBajo, busqueda);
+
+            // Si se borró el último producto de la última página, se vuelve a la anterior.
+            if (resultado.Items.Count == 0 && pagina > 1)
+            {
+                pagina = resultado.TotalPaginas;
+                resultado = await ProductoService.ObtenerPaginado(
+                    pagina, TamanioPagina, categoriaId, soloStockBajo, busqueda);
+            }
+
+            productos = resultado.Items;
+            totalPaginas = resultado.TotalPaginas;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al cargar productos: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task Recargar()
+    {
+        pagina = 1;
+        await CargarProductos();
+    }
+
+    private void SolicitarEliminar(Producto p) => productoAEliminar = p;
+
+    private async Task ConfirmarEliminar()
+    {
+        if (productoAEliminar is null) return;
+        try
+        {
+            await ProductoService.Eliminar(productoAEliminar.Id);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo eliminar el producto: {ex.Message}";
+        }
+        finally
+        {
+            productoAEliminar = null;
+        }
+        await CargarProductos();
+    }
+
+    private async Task ToggleDisponible(int id)
+    {
+        try { await ProductoService.ToggleDisponible(id); await CargarProductos(); }
+        catch (Exception ex) { mensajeError = $"No se pudo actualizar el producto: {ex.Message}"; }
+    }
+
+    private void EditarProducto(int id) => Nav.NavigateTo($"/admin/editar-producto/{id}");
+
+    private async Task CambiarPagina(int nuevaPagina)
+    {
+        pagina = nuevaPagina;
+        await CargarProductos();
+    }
+
+    public void Dispose() => ProductoService.OnChange -= ManejarCambioExterno;
+}

@@ -1,0 +1,181 @@
+@page "/"
+@page "/categoria/{CategoriaFiltro}"
+@layout Shared.CatalogoLayout
+@inject IProductoService ProductoService
+@implements IDisposable
+
+<PageTitle>@Titulo — TechMundo</PageTitle>
+
+@if (CategoriaFiltro is null && string.IsNullOrWhiteSpace(Q))
+{
+    <ProductoCarrusel Productos="destacados" OnSeleccionar="AbrirDetalle" />
+}
+
+<div class="encabezado-lista">
+    <h1 class="titulo-catalogo">
+        @Titulo
+    </h1>
+
+    <div class="ordenar">
+        <label for="ordenar">Ordenar por</label>
+        <select id="ordenar" class="form-select form-select-sm" value="@orden" @onchange="CambiarOrden">
+            <option value="@OrdenProducto.Original">Destacados</option>
+            <option value="@OrdenProducto.PrecioMenor">Menor precio</option>
+            <option value="@OrdenProducto.PrecioMayor">Mayor precio</option>
+        </select>
+    </div>
+</div>
+
+@if (mensajeError is not null)
+{
+    <AlertError Mensaje="@mensajeError" OnCerrar="() => mensajeError = null" />
+}
+
+@if (isLoading)
+{
+    <div class="spinner">Cargando…</div>
+}
+else if (categoriaInexistente)
+{
+    <p class="vacio">La categoría "@CategoriaFiltro" no existe. <a href="/">Ver todos los productos</a></p>
+}
+else if (productos.Count == 0)
+{
+    <p class="vacio">No encontramos productos que coincidan con tu búsqueda.</p>
+}
+else
+{
+    <div class="grilla-vidriera">
+        @foreach (var p in productos)
+        {
+            <ProductoVidriera Producto="p" OnSeleccionar="AbrirDetalle" />
+        }
+    </div>
+    <Paginacion PaginaActual="pagina" TotalPaginas="totalPaginas" OnCambio="CambiarPagina" />
+}
+
+<ProductoModal Producto="productoSeleccionado" OnCerrar="() => productoSeleccionado = null" />
+
+@code {
+    [Parameter] public string? CategoriaFiltro { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? Q { get; set; }
+
+    private List<Producto> productos = new();
+    private List<Producto> destacados = new();
+    private List<Categoria> categorias = new();
+    private Producto? productoSeleccionado;
+    private bool isLoading = true;
+    private string? mensajeError;
+    private bool categoriaInexistente;
+
+    // Nombre real de la categoría (la URL viene en minúsculas: /categoria/redes → "Redes").
+    private Categoria? CategoriaActual => string.IsNullOrEmpty(CategoriaFiltro)
+        ? null
+        : categorias.FirstOrDefault(c => c.Nombre.Equals(CategoriaFiltro, StringComparison.OrdinalIgnoreCase));
+
+    private string Titulo =>
+        !string.IsNullOrWhiteSpace(Q) ? $"Resultados para \"{Q}\""
+        : CategoriaFiltro is null ? "Todos los productos"
+        : CategoriaActual?.Nombre ?? "Categoría no encontrada";
+    private OrdenProducto orden = OrdenProducto.Original;
+    private int pagina = 1;
+    private int totalPaginas;
+    private const int TamanioPagina = 8;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductoService.OnChange += ManejarCambioExterno;
+        try
+        {
+            categorias = await ProductoService.ObtenerCategorias();
+            destacados = await ProductoService.ObtenerDestacados();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No pudimos cargar el catálogo: {ex.Message}";
+        }
+        // La lista de productos se carga en OnParametersSetAsync, que corre siempre
+        // después de este método (antes se cargaba dos veces).
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        pagina = 1;
+        await CargarProductos();
+    }
+
+    // Llega desde cualquier pestaña (ej. una venta): siempre por InvokeAsync.
+    private void ManejarCambioExterno() => InvokeAsync(async () =>
+    {
+        try { destacados = await ProductoService.ObtenerDestacados(); }
+        catch (Exception) { /* el carrusel conserva los destacados anteriores */ }
+        await CargarProductos();
+        StateHasChanged();
+    });
+
+    private async Task CargarProductos()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Antes, una categoría inexistente (/categoria/xyz) mostraba TODOS los productos.
+            categoriaInexistente = CategoriaFiltro is not null && CategoriaActual is null && categorias.Count > 0;
+            if (categoriaInexistente)
+            {
+                productos = new();
+                totalPaginas = 1;
+                return;
+            }
+
+            var categoriaId = CategoriaActual?.Id;
+            var resultado = await Consultar(categoriaId);
+
+            // Si la página actual quedó vacía (ej. se agotó el último producto de la última
+            // página), se salta a la última página que sí tiene productos.
+            if (resultado.Items.Count == 0 && pagina > 1)
+            {
+                pagina = resultado.TotalPaginas;
+                resultado = await Consultar(categoriaId);
+            }
+
+            productos = resultado.Items;
+            totalPaginas = resultado.TotalPaginas;
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No pudimos cargar los productos: {ex.Message}";
+            productos = new();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Task<PagedResult<Producto>> Consultar(int? categoriaId) => ProductoService.ObtenerPaginado(
+        pagina, TamanioPagina, categoriaId, soloStockBajo: false, busqueda: Q, soloDisponibles: true, orden: orden);
+
+    private async Task CambiarOrden(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<OrdenProducto>(e.Value?.ToString(), out var nuevo))
+        {
+            orden = nuevo;
+            pagina = 1;
+            await CargarProductos();
+        }
+    }
+
+    private void AbrirDetalle(Producto p) => productoSeleccionado = p;
+
+    private async Task CambiarPagina(int nuevaPagina)
+    {
+        pagina = nuevaPagina;
+        await CargarProductos();
+    }
+
+    public void Dispose() => ProductoService.OnChange -= ManejarCambioExterno;
+}

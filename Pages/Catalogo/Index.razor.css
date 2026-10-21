@@ -1,0 +1,32 @@
+.encabezado-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--espacio-m, 1rem);
+    flex-wrap: wrap;
+    margin-bottom: var(--espacio-l);
+}
+
+.ordenar { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-texto-claro); }
+.ordenar label { margin: 0; white-space: nowrap; }
+.ordenar select { width: auto; }
+
+.titulo-catalogo {
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+/* Mobile-first: 2 columnas en celulares, 3 en tablets y 4 en escritorio.
+   minmax(0, 1fr) evita que un nombre largo ensanche la columna. */
+.grilla-vidriera {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espacio-s);
+}
+
+@media (min-width: 641px) {
+    .grilla-vidriera { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espacio-m); }
+}
+@media (min-width: 901px) {
+    .grilla-vidriera { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

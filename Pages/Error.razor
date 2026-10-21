@@ -1,0 +1,29 @@
+@page "/Error"
+@layout Shared.LayoutMinimo
+@using System.Diagnostics
+
+@* Página a la que redirige app.UseExceptionHandler("/Error") en producción (Program.cs).
+   App.razor la renderiza en el servidor sin interactividad, así se muestra aunque el circuito
+   de Blazor no pueda conectarse. Antes la página no existía y el error quedaba en blanco. *@
+
+<PageTitle>Error — TechMundo</PageTitle>
+
+<div class="error-boundary" role="alert">
+    <i class="bi bi-exclamation-triangle"></i>
+    <h1>Algo salió mal</h1>
+    <p>Ocurrió un error inesperado al procesar tu pedido. Ya quedó registrado; probá de nuevo en unos minutos.</p>
+    @if (!string.IsNullOrEmpty(IdSolicitud))
+    {
+        <p class="id-solicitud">Código de referencia: <code>@IdSolicitud</code></p>
+    }
+    <div class="acciones">
+        <a class="btn-primario btn-link-boton" href="/">Volver al catálogo</a>
+    </div>
+</div>
+
+@code {
+    // Disponible solo cuando la página se genera en el servidor durante la petición con error.
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private string? IdSolicitud => Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

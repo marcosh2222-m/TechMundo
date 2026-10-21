@@ -1,0 +1,130 @@
+@page "/admin"
+@layout Shared.AdminLayout
+@inject IProductoService ProductoService
+@inject IVentaService VentaService
+@inject IJSRuntime JS
+@inject ILogger<Dashboard> Logger
+@implements IAsyncDisposable
+
+<PageTitle>Admin — TechMundo</PageTitle>
+
+<h2>Dashboard</h2>
+<p class="dashboard-sub">Resumen de la tienda. Se actualiza solo cuando hay ventas o cambios en el catálogo.</p>
+
+<section class="resumen-ventas" aria-label="Ventas de los últimos 30 días">
+    <EstadisticaCard Valor="@resumen30.CantidadVentas.ToString()" Etiqueta="Ventas (últimos 30 días)" />
+    <EstadisticaCard Valor="@Formato.Monto(resumen30.Ingresos)" Etiqueta="Ingresos (últimos 30 días)" />
+    <EstadisticaCard Valor="@resumen30.Unidades.ToString()" Etiqueta="Unidades vendidas" />
+</section>
+
+<div class="dashboard-columnas">
+    <section class="tarjeta">
+        <h3><i class="bi bi-receipt"></i> Últimas ventas</h3>
+        @if (ultimasVentas.Count == 0)
+        {
+            <p class="vacio">Todavía no hay ventas.</p>
+        }
+        else
+        {
+            <ul class="lista-dashboard">
+                @foreach (var v in ultimasVentas)
+                {
+                    <li>
+                        <span>
+                            <strong>#@v.Id</strong> @v.ClienteNombre
+                            <small>@Formato.FechaHora(v.Fecha)</small>
+                        </span>
+                        <span class="monto">@Formato.Precio(v.Total)</span>
+                    </li>
+                }
+            </ul>
+        }
+        <a class="btn-secundario btn-link-boton btn-sm" href="/admin/ventas">Ver historial completo →</a>
+    </section>
+
+    <section class="tarjeta">
+        <h3><i class="bi bi-exclamation-triangle"></i> Productos que necesitan reposición</h3>
+        @if (stockBajo.Count == 0)
+        {
+            <p class="vacio">Ningún producto está por debajo de su stock mínimo. 👍</p>
+        }
+        else
+        {
+            <ul class="lista-dashboard">
+                @foreach (var p in stockBajo)
+                {
+                    <li>
+                        <span>@p.Nombre</span>
+                        <span class="badge aviso">@p.Stock / @p.StockMinimo mín.</span>
+                    </li>
+                }
+            </ul>
+        }
+        <a class="btn-secundario btn-link-boton btn-sm" href="/admin/productos">Ver todos los productos →</a>
+    </section>
+</div>
+
+@code {
+    private List<Producto> stockBajo = new();
+    private List<Venta> ultimasVentas = new();
+    private ResumenVentas resumen30 = new(0, 0, 0);
+    private IJSObjectReference? _modulo;
+    private bool datosCargados;
+    private bool notificado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductoService.OnChange += ManejarCambio;
+        await Cargar();
+        datosCargados = true;
+    }
+
+    private async Task Cargar()
+    {
+        try
+        {
+            stockBajo = (await ProductoService.ObtenerPaginado(1, 50, soloStockBajo: true)).Items;
+            ultimasVentas = (await VentaService.ObtenerPaginado(1, 5, new FiltroVentas())).Items;
+            resumen30 = await VentaService.ObtenerResumen(new FiltroVentas(Desde: Reloj.Hoy.AddDays(-30)));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "No se pudo cargar el dashboard");
+        }
+    }
+
+    // Una venta o un cambio en otra pestaña refresca el dashboard (CambiosCatalogo es Singleton).
+    private void ManejarCambio() => InvokeAsync(async () => { await Cargar(); StateHasChanged(); });
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Notificación del navegador (Unidad 2, Clase 12-13) — equivalente de
+        // "tareas vencidas" para este dominio: avisa al admin de stock bajo.
+        // Ojo: no alcanza con "firstRender", porque el primer render ocurre ANTES de que
+        // termine la consulta a la base (la lista todavía está vacía). Por eso se espera
+        // a que los datos estén cargados y se notifica una sola vez.
+        if (!datosCargados || notificado || stockBajo.Count == 0) return;
+        notificado = true;
+
+        try
+        {
+            _modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+            var mensaje = stockBajo.Count == 1
+                ? $"{stockBajo[0].Nombre} tiene stock bajo."
+                : $"{stockBajo.Count} productos tienen stock bajo.";
+            await _modulo.InvokeVoidAsync("mostrarNotificacion", "TechMundo — Alerta de stock", mensaje);
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException ex) { Logger.LogWarning(ex, "No se pudo mostrar la notificación"); }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        ProductoService.OnChange -= ManejarCambio;
+        if (_modulo is not null)
+        {
+            try { await _modulo.DisposeAsync(); }
+            catch (JSDisconnectedException) { /* circuito ya cerrado */ }
+        }
+    }
+}

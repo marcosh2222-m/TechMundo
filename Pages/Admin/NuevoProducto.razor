@@ -1,0 +1,16 @@
+@page "/admin/nuevo-producto"
+@layout Shared.AdminLayout
+@inject NavigationManager Nav
+
+<PageTitle>Nuevo producto — TechMundo</PageTitle>
+
+<section class="tarjeta">
+    <h2>Nuevo producto</h2>
+    <ProductoForm Modelo="nuevoProducto" OnGuardado="AlGuardar" OnCancelar='@(() => Nav.NavigateTo("/admin/productos"))' />
+</section>
+
+@code {
+    private Producto nuevoProducto = new() { StockMinimo = 5 };
+
+    private void AlGuardar(Producto _) => Nav.NavigateTo("/admin/productos");
+}

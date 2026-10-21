@@ -1,0 +1,148 @@
+@page "/admin/ventas"
+@layout Shared.AdminLayout
+@inject IVentaService VentaService
+@inject IProductoService ProductoService
+@implements IDisposable
+
+<PageTitle>Ventas — TechMundo</PageTitle>
+
+<div class="header-pagina">
+    <h2>Historial de ventas</h2>
+</div>
+
+<section class="resumen" aria-label="Resumen del período filtrado">
+    <EstadisticaCard Valor="@resumen.CantidadVentas.ToString()" Etiqueta="Ventas:" Compacta="true" />
+    <EstadisticaCard Valor="@resumen.Unidades.ToString()" Etiqueta="Unidades vendidas:" Compacta="true" />
+    <EstadisticaCard Valor="@Formato.Precio(resumen.Ingresos)" Etiqueta="Ingresos:" Compacta="true" />
+</section>
+
+<div class="filtros">
+    <label>Desde
+        <input type="date" class="control" @bind="desde" @bind:format="yyyy-MM-dd" @bind:after="Recargar" max="@hasta?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label>Hasta
+        <input type="date" class="control" @bind="hasta" @bind:format="yyyy-MM-dd" @bind:after="Recargar" min="@desde?.ToString("yyyy-MM-dd")" />
+    </label>
+    <label class="crece">Buscar
+        <input type="text" class="control" placeholder="Cliente, email o N.º de venta..." @bind="busqueda" @bind:event="oninput" @bind:after="Recargar" />
+    </label>
+    <label>Ordenar por
+        <select class="control" @bind="orden" @bind:after="Recargar">
+            <option value="@OrdenVenta.MasRecientes">Más recientes</option>
+            <option value="@OrdenVenta.MasAntiguas">Más antiguas</option>
+            <option value="@OrdenVenta.MayorTotal">Mayor total</option>
+            <option value="@OrdenVenta.MenorTotal">Menor total</option>
+        </select>
+    </label>
+    @if (hayFiltros)
+    {
+        <button class="btn-secundario btn-sm" @onclick="Limpiar">Limpiar filtros</button>
+    }
+</div>
+
+@if (isLoading)
+{
+    <div class="spinner">Cargando…</div>
+}
+else if (ventas.Count == 0)
+{
+    <p class="vacio">No hay ventas que coincidan con los filtros.</p>
+}
+else
+{
+    <div class="tarjeta tabla-wrap">
+        <table class="tabla-ventas">
+            <thead>
+                <tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th class="num">Unidades</th><th class="num">Total</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var v in ventas)
+                {
+                    <tr @onclick="() => seleccionada = v" class="fila">
+                        <td>#@v.Id</td>
+                        <td>@Formato.FechaHora(v.Fecha)</td>
+                        <td>
+                            <span class="cli-nombre">@v.ClienteNombre</span>
+                            <span class="cli-email">@v.ClienteEmail</span>
+                        </td>
+                        <td class="num">@v.CantidadUnidades</td>
+                        <td class="num total">@Formato.Precio(v.Total)</td>
+                        <td class="num"><button class="btn-secundario btn-sm" @onclick="() => seleccionada = v" @onclick:stopPropagation="true">Ver detalle</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Paginacion PaginaActual="pagina" TotalPaginas="totalPaginas" OnCambio="CambiarPagina" />
+}
+
+@if (mensajeError is not null)
+{
+    <AlertError Mensaje="@mensajeError" OnCerrar="() => mensajeError = null" />
+}
+
+<VentaDetalleModal Venta="seleccionada" OnCerrar="() => seleccionada = null" />
+
+@code {
+    private const int TamanioPagina = 8;
+
+    private List<Venta> ventas = new();
+    private ResumenVentas resumen = new(0, 0, 0);
+    private Venta? seleccionada;
+    private bool isLoading = true;
+    private string? mensajeError;
+    private int pagina = 1, totalPaginas = 1;
+
+    private DateTime? desde, hasta;
+    private string? busqueda;
+    private OrdenVenta orden = OrdenVenta.MasRecientes;
+
+    private bool hayFiltros => desde is not null || hasta is not null || !string.IsNullOrWhiteSpace(busqueda) || orden != OrdenVenta.MasRecientes;
+    private FiltroVentas Filtro => new(desde, hasta, busqueda, orden);
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProductoService.OnChange += ManejarCambio; // una venta nueva dispara OnChange
+        await Cargar();
+    }
+
+    private void ManejarCambio() => InvokeAsync(async () => { await Cargar(); StateHasChanged(); });
+
+    private async Task Recargar() { pagina = 1; await Cargar(); }
+
+    private async Task Cargar()
+    {
+        try
+        {
+            var resultado = await VentaService.ObtenerPaginado(pagina, TamanioPagina, Filtro);
+            if (resultado.Items.Count == 0 && pagina > 1)
+            {
+                pagina = resultado.TotalPaginas;
+                resultado = await VentaService.ObtenerPaginado(pagina, TamanioPagina, Filtro);
+            }
+            ventas = resultado.Items;
+            totalPaginas = resultado.TotalPaginas;
+            resumen = await VentaService.ObtenerResumen(Filtro);
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudo cargar el historial de ventas: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CambiarPagina(int nueva) { pagina = nueva; await Cargar(); }
+
+    private async Task Limpiar()
+    {
+        desde = hasta = null;
+        busqueda = null;
+        orden = OrdenVenta.MasRecientes;
+        await Recargar();
+    }
+
+    public void Dispose() => ProductoService.OnChange -= ManejarCambio;
+}

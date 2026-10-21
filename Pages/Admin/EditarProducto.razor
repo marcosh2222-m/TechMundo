@@ -1,0 +1,38 @@
+@page "/admin/editar-producto/{Id:int}"
+@layout Shared.AdminLayout
+@inject IProductoService ProductoService
+@inject NavigationManager Nav
+
+<PageTitle>Editar producto — TechMundo</PageTitle>
+
+<section class="tarjeta">
+    <h2>Editar producto</h2>
+
+    @if (isLoading)
+    {
+        <p>Cargando…</p>
+    }
+    else if (producto is null)
+    {
+        <p>No se encontró el producto solicitado.</p>
+    }
+    else
+    {
+        <ProductoForm Modelo="producto" OnGuardado="AlGuardar" OnCancelar='@(() => Nav.NavigateTo("/admin/productos"))' />
+    }
+</section>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Producto? producto;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        producto = await ProductoService.ObtenerPorId(Id);
+        isLoading = false;
+    }
+
+    private void AlGuardar(Producto _) => Nav.NavigateTo("/admin/productos");
+}
