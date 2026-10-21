@@ -1,0 +1,88 @@
+.tienda { display: flex; flex-direction: column; min-height: 100vh; }
+
+.tienda-header {
+    display: grid;
+    grid-template-columns: 1fr minmax(200px, 440px) 1fr;
+    align-items: center;
+    gap: var(--espacio-l);
+    padding: var(--espacio-m) var(--espacio-xl);
+    border-bottom: 1px solid var(--color-borde);
+    background-color: var(--color-tarjeta);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.tienda-logo { justify-self: start; font-size: 1.35rem; font-weight: 700; color: var(--color-texto); letter-spacing: -0.02em; }
+.tienda-header-buscador { width: 100%; position: relative; display: flex; align-items: center; }
+.buscador-boton {
+    position: absolute; right: 4px; width: 30px; height: 30px; padding: 0;
+    border-radius: 999px; background: transparent; color: var(--color-texto-claro);
+    display: flex; align-items: center; justify-content: center;
+}
+.buscador-boton:hover { color: var(--color-secundario); opacity: 1; }
+.header-acciones { display: flex; align-items: center; gap: 8px; justify-self: end; }
+.btn-carrito {
+    position: relative; background: transparent; border: 1px solid var(--color-borde); color: var(--color-texto);
+    border-radius: 999px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.05rem; flex-shrink: 0;
+}
+.btn-carrito:hover { background-color: var(--color-fondo); }
+.contador {
+    position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px;
+    background: var(--color-secundario); color: white; border-radius: 999px;
+    font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.buscador-input {
+    width: 100%;
+    padding: 8px 40px 8px var(--espacio-m);
+    border: 1px solid var(--color-borde);
+    border-radius: 999px;
+    font-size: 0.88rem;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+}
+
+.tienda-body {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    gap: var(--espacio-xl);
+    padding: var(--espacio-l) var(--espacio-xl) var(--espacio-l) var(--espacio-m);
+}
+
+.tienda-sidebar { width: 180px; flex-shrink: 0; }
+.tienda-sidebar h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-texto-claro); margin-bottom: var(--espacio-m); }
+.tienda-sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+.tienda-sidebar nav ::deep a {
+    padding: 8px 10px;
+    border-radius: var(--radio-borde);
+    color: var(--color-texto);
+    font-size: 0.9rem;
+}
+.tienda-sidebar nav ::deep a:hover { background-color: var(--color-fondo); }
+.tienda-sidebar nav ::deep a.active { background-color: var(--color-secundario); color: white; font-weight: 600; }
+
+/* width: 100% es necesario porque margin: auto anula el "stretch" de flex: sin él, en celulares
+   el main tomaba el ancho del contenido (el carrusel) y la página se desbordaba. */
+.tienda-main { flex: 1; min-width: 0; width: 100%; max-width: 1100px; margin: 0 auto; }
+
+.tienda-footer {
+    text-align: center;
+    padding: var(--espacio-l) var(--espacio-m);
+    font-size: 0.8rem;
+    color: var(--color-texto-claro);
+    border-top: 1px solid var(--color-borde);
+}
+.aviso-precios { margin: 4px 0 0; font-size: 0.72rem; }
+.link-admin { display: block; margin-top: var(--espacio-s); font-size: 0.72rem; color: var(--color-texto-claro); opacity: 0.6; }
+.link-admin:hover { opacity: 1; }
+
+/* Mobile-first: sidebar pasa a fila horizontal de chips en pantallas angostas */
+@media (max-width: 640px) {
+    .tienda-body { flex-direction: column; }
+    .tienda-sidebar { width: 100%; }
+    .tienda-sidebar nav { flex-direction: row; flex-wrap: wrap; }
+    .tienda-header { grid-template-columns: 1fr auto; padding: var(--espacio-m); }
+    .tienda-header-buscador { grid-column: 1 / -1; grid-row: 2; }
+}

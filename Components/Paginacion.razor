@@ -1,0 +1,16 @@
+@if (TotalPaginas > 1)
+{
+    <nav class="paginacion" aria-label="Paginación de productos">
+        <button class="btn-secundario btn-sm" disabled="@(PaginaActual <= 1)"
+                @onclick="() => OnCambio.InvokeAsync(PaginaActual - 1)">‹ Anterior</button>
+        <span>Página @PaginaActual de @TotalPaginas</span>
+        <button class="btn-secundario btn-sm" disabled="@(PaginaActual >= TotalPaginas)"
+                @onclick="() => OnCambio.InvokeAsync(PaginaActual + 1)">Siguiente ›</button>
+    </nav>
+}
+
+@code {
+    [Parameter] public int PaginaActual { get; set; }
+    [Parameter] public int TotalPaginas { get; set; }
+    [Parameter] public EventCallback<int> OnCambio { get; set; }
+}

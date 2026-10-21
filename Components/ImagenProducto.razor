@@ -1,0 +1,25 @@
+@* ImagenProducto — foto del producto con ícono por defecto.
+   Si no hay URL se muestra el ícono; si la URL falla al cargar, el script global de
+   App.razor oculta el <img> y muestra el ícono hermano (.imagen-placeholder), que
+   respeta el modo oscuro. Antes este bloque estaba repetido en 5 componentes. *@
+
+@if (!string.IsNullOrWhiteSpace(Url))
+{
+    <img src="@Url" alt="@Alt" referrerpolicy="no-referrer" loading="lazy" />
+    <div class="imagen-placeholder oculto" aria-hidden="true"><i class="bi @Icono"></i></div>
+}
+else
+{
+    <div class="imagen-placeholder" role="img" aria-label="@($"{Alt} (sin imagen)")"><i class="bi @Icono"></i></div>
+}
+
+@code {
+    /// <summary>URL de la imagen (puede ser null o vacía).</summary>
+    [Parameter] public string? Url { get; set; }
+
+    /// <summary>Texto alternativo, normalmente el nombre del producto.</summary>
+    [Parameter] public string Alt { get; set; } = string.Empty;
+
+    /// <summary>Clase de Bootstrap Icons para el ícono por defecto.</summary>
+    [Parameter] public string Icono { get; set; } = "bi-box-seam";
+}

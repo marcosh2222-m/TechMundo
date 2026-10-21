@@ -1,0 +1,49 @@
+.dialogo-producto {
+    display: flex;
+    gap: var(--espacio-l);
+    padding: var(--espacio-xl);
+    overflow-y: auto;
+}
+
+.dialogo-imagen {
+    width: 160px;
+    height: 160px;
+    flex-shrink: 0;
+    border-radius: var(--radio-borde);
+    overflow: hidden;
+    background-color: var(--color-fondo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: var(--color-texto-claro);
+}
+.dialogo-imagen ::deep img { width: 100%; height: 100%; object-fit: cover; }
+
+.dialogo-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dialogo-marca { font-size: 0.75rem; color: var(--color-texto-claro); text-transform: uppercase; }
+.dialogo-info h2 { margin: 2px 0 var(--espacio-s); }
+.dialogo-desc { color: var(--color-texto-claro); font-size: 0.88rem; margin: var(--espacio-s) 0; }
+.dialogo-precio { font-size: 1.5rem; font-weight: 700; margin: var(--espacio-s) 0; }
+.dialogo-stock-bajo { color: var(--color-peligro); font-size: 0.82rem; font-weight: 600; }
+
+.btn-comprar { color: white; margin-top: auto; align-self: flex-start; }
+
+
+@media (max-width: 480px) {
+    .dialogo-producto { flex-direction: column; padding: var(--espacio-l); }
+    .dialogo-imagen { width: 100%; height: 180px; }
+}
+
+.dialogo-subtitulo { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin: var(--espacio-s) 0 4px; }
+.dialogo-caracteristicas { padding-left: 1.1rem; margin: 0 0 var(--espacio-s); font-size: 0.85rem; color: var(--color-texto-claro); }
+.dialogo-caracteristicas li { margin-bottom: 2px; }
+
+.dialogo-stock { color: var(--color-texto-claro); font-size: 0.8rem; margin: 0 0 var(--espacio-s); }
+.aviso-carrito { border-radius: var(--radio-borde); padding: var(--espacio-s) var(--espacio-m); font-size: 0.82rem; margin: var(--espacio-s) 0; display: flex; justify-content: space-between; align-items: center; gap: var(--espacio-s); flex-wrap: wrap; }
+.aviso-carrito.ok { background-color: var(--color-exito-bg); color: var(--color-exito); }
+.aviso-carrito.error { background-color: var(--color-peligro-bg); color: var(--color-peligro); }
+.link-carrito { background: transparent; border: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 0; }
+.btn-comprar:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.dialogo-info .badge { align-self: flex-start; }

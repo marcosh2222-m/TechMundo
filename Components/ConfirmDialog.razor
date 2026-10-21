@@ -1,0 +1,23 @@
+@* ConfirmDialog — Unidad 1/4: modal de confirmación sin JS externo.
+   Reemplaza confirm() de JavaScript por un componente Blazor puro: la visibilidad se
+   controla con estado de C#. Se apoya en el componente genérico <Modal>. *@
+
+<Modal Visible="Visible" OnCerrar="OnCancelar" Rol="alertdialog" Etiqueta="@Titulo" AnchoMaximo="400" MostrarCerrar="false">
+    <div class="dialogo">
+        <h3>@Titulo</h3>
+        <p>@Mensaje</p>
+        <div class="acciones-dialogo">
+            <button class="btn-secundario" @onclick="() => OnCancelar.InvokeAsync()">Cancelar</button>
+            <button class="btn-peligro-solido" @onclick="() => OnConfirmar.InvokeAsync()">@TextoConfirmar</button>
+        </div>
+    </div>
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Titulo { get; set; } = "¿Confirmar?";
+    [Parameter] public string Mensaje { get; set; } = string.Empty;
+    [Parameter] public string TextoConfirmar { get; set; } = "Eliminar";
+    [Parameter] public EventCallback OnConfirmar { get; set; }
+    [Parameter] public EventCallback OnCancelar { get; set; }
+}

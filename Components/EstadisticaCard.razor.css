@@ -1,0 +1,21 @@
+.estadistica.card {
+    background-color: var(--color-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    padding: var(--espacio-l);
+    text-align: center;
+}
+.estadistica.card .estadistica-valor { display: block; font-size: 1.8rem; font-weight: 700; }
+.estadistica.card .estadistica-label { font-size: 0.8rem; color: var(--color-texto-claro); }
+.estadistica.card.aviso { border-color: var(--color-peligro); }
+.estadistica.card.aviso .estadistica-valor { color: var(--color-peligro); }
+
+.estadistica.compacta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--color-texto-claro);
+}
+.estadistica.compacta .estadistica-valor { font-weight: 700; color: var(--color-texto); order: 2; }
+.estadistica.compacta.aviso .estadistica-valor { color: var(--color-peligro); }

@@ -1,0 +1,39 @@
+@* VentaDetalleModal — detalle de una venta (productos, cantidades, precios). Usa <Modal>. *@
+
+<Modal Visible="Venta is not null" OnCerrar="OnCerrar" Etiqueta="@($"Detalle de la venta {Venta?.Id}")">
+    @if (Venta is not null)
+    {
+        <header>
+            <h2>Venta #@Venta.Id</h2>
+            <p class="venta-meta">@Formato.FechaHora(Venta.Fecha) · @Venta.ClienteNombre · @Venta.ClienteEmail</p>
+        </header>
+
+        <div class="modal-cuerpo">
+            <table class="tabla-items">
+                <thead>
+                    <tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in Venta.Items)
+                    {
+                        <tr>
+                            <td>@i.NombreProducto</td>
+                            <td class="num">@i.Cantidad</td>
+                            <td class="num">@Formato.Precio(i.PrecioUnitario)</td>
+                            <td class="num">@Formato.Precio(i.Subtotal)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <div class="venta-total"><span>@Venta.CantidadUnidades unidades</span><strong>Total: @Formato.Precio(Venta.Total)</strong></div>
+        </footer>
+    }
+</Modal>
+
+@code {
+    [Parameter] public Venta? Venta { get; set; }
+    [Parameter] public EventCallback OnCerrar { get; set; }
+}

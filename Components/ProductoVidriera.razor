@@ -1,0 +1,33 @@
+@* ProductoVidriera — tarjeta de producto para el catálogo público (solo lectura, sin acciones de admin).
+   Es un <article> (HTML5 semántico) que se puede abrir con clic o con teclado (Enter / Espacio). *@
+<article class="vidriera-card" tabindex="0" role="button" aria-label="@($"Ver detalle de {Producto.Nombre}")"
+         @onclick="Abrir" @onkeydown="Tecla">
+    <div class="vidriera-imagen">
+        <ImagenProducto Url="@Producto.ImagenUrl" Alt="@Producto.Nombre" />
+        @if (Producto.StockBajo)
+        {
+            <span class="badge-flotante">¡Últimas unidades!</span>
+        }
+    </div>
+    <div class="vidriera-info">
+        @if (!string.IsNullOrWhiteSpace(Producto.Marca))
+        {
+            <span class="vidriera-marca">@Producto.Marca</span>
+        }
+        <h3 class="vidriera-nombre">@Producto.Nombre</h3>
+        <span class="vidriera-precio">@Formato.Precio(Producto.Precio)</span>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public Producto Producto { get; set; } = default!;
+    [Parameter] public EventCallback<Producto> OnSeleccionar { get; set; }
+
+    private Task Abrir() => OnSeleccionar.InvokeAsync(Producto);
+
+    private async Task Tecla(KeyboardEventArgs e)
+    {
+        // Enter o Espacio abren el detalle, igual que un botón.
+        if (e.Key is "Enter" or " ") await Abrir();
+    }
+}

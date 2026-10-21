@@ -1,0 +1,42 @@
+.vidriera-card {
+    background: var(--color-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.vidriera-card:focus-visible { outline: 2px solid var(--color-secundario); outline-offset: 2px; }
+.vidriera-card:hover { transform: translateY(-3px); box-shadow: var(--sombra); }
+
+.vidriera-imagen {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-fondo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--color-texto-claro);
+}
+.vidriera-imagen ::deep img { width: 100%; height: 100%; object-fit: cover; }
+
+.badge-flotante {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background-color: var(--color-peligro);
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+
+.vidriera-info { padding: var(--espacio-m); display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.vidriera-marca { font-size: 0.7rem; color: var(--color-texto-claro); text-transform: uppercase; letter-spacing: 0.03em; }
+.vidriera-nombre { font-size: 0.9rem; font-weight: 600; flex: 1; margin: 0; letter-spacing: 0; }
+.vidriera-precio { font-size: 1rem; font-weight: 700; margin-top: var(--espacio-s); }

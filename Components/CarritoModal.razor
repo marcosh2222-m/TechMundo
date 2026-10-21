@@ -1,0 +1,206 @@
+@* CarritoModal — carrito de compras en una ventana modal (no te saca de la página).
+   Tiene 3 pasos dentro del mismo modal: 1) resumen del carrito, 2) datos del cliente,
+   3) confirmación. Usa CarritoState (State Service) y VentaService. *@
+@inject CarritoState Carrito
+@inject IVentaService VentaService
+@inject ILogger<CarritoModal> Logger
+@implements IDisposable
+
+<Modal Visible="Carrito.Abierto" OnCerrar="Cerrar" Etiqueta="Carrito de compras" AnchoMaximo="520">
+    @if (paso == Paso.Exito && ventaConfirmada is not null)
+    {
+        <div class="modal-cuerpo exito">
+            <div class="exito-icono"><i class="bi bi-check-circle-fill"></i></div>
+            <h2>¡Gracias por tu compra, @ventaConfirmada.ClienteNombre.Split(' ')[0]!</h2>
+            <p>Tu pedido <strong>#@ventaConfirmada.Id</strong> fue registrado por un total de
+               <strong>@Formato.Precio(ventaConfirmada.Total)</strong>.</p>
+            <ul class="resumen-lista">
+                @foreach (var i in ventaConfirmada.Items)
+                {
+                    <li><span>@i.Cantidad × @i.NombreProducto</span><span>@Formato.Precio(i.Subtotal)</span></li>
+                }
+            </ul>
+            <button class="btn-primario" @onclick="Cerrar">Seguir comprando</button>
+        </div>
+    }
+    else
+    {
+        <header>
+            <h2>@(paso == Paso.Datos ? "Confirmar compra" : "Tu carrito")</h2>
+        </header>
+
+        <div class="modal-cuerpo">
+            @if (error is not null)
+            {
+                <AlertError Mensaje="@error" OnCerrar="() => error = null" />
+            }
+
+            @if (Carrito.Lineas.Count == 0)
+            {
+                <div class="carrito-vacio">
+                    <i class="bi bi-cart"></i>
+                    <p>Tu carrito está vacío.</p>
+                </div>
+            }
+            else if (paso == Paso.Carrito)
+            {
+                @foreach (var l in Carrito.Lineas)
+                {
+                    <div class="linea">
+                        <div class="linea-img">
+                            <ImagenProducto Url="@l.ImagenUrl" Alt="@l.Nombre" />
+                        </div>
+                        <div class="linea-info">
+                            <span class="linea-nombre">@l.Nombre</span>
+                            <span class="linea-precio">@Formato.Precio(l.PrecioUnitario) c/u</span>
+                            <div class="cantidad">
+                                <button @onclick="() => Cambiar(l.ProductoId, l.Cantidad - 1)" aria-label="Quitar una unidad">−</button>
+                                <span>@l.Cantidad</span>
+                                <button @onclick="() => Cambiar(l.ProductoId, l.Cantidad + 1)" aria-label="Agregar una unidad"
+                                        disabled="@(l.Cantidad >= l.StockDisponible)">+</button>
+                            </div>
+                        </div>
+                        <div class="linea-derecha">
+                            <span class="linea-subtotal">@Formato.Precio(l.Subtotal)</span>
+                            <button class="btn-quitar" @onclick="() => Carrito.Quitar(l.ProductoId)" aria-label="Eliminar @l.Nombre">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <ul class="resumen-lista">
+                    @foreach (var l in Carrito.Lineas)
+                    {
+                        <li><span>@l.Cantidad × @l.Nombre</span><span>@Formato.Precio(l.Subtotal)</span></li>
+                    }
+                </ul>
+
+                <EditForm Model="datos" OnValidSubmit="Confirmar" id="form-compra">
+                    <DataAnnotationsValidator />
+                    <div class="campo-form">
+                        <label for="cli-nombre">Nombre y apellido</label>
+                        <InputText id="cli-nombre" @bind-Value="datos.Nombre" class="form-control" />
+                        <ValidationMessage For="() => datos.Nombre" />
+                    </div>
+                    <div class="campo-form">
+                        <label for="cli-email">Email</label>
+                        <InputText id="cli-email" @bind-Value="datos.Email" class="form-control" placeholder="nombre@correo.com" />
+                        <ValidationMessage For="() => datos.Email" />
+                    </div>
+                </EditForm>
+            }
+        </div>
+
+        @if (Carrito.Lineas.Count > 0)
+        {
+            <footer>
+                <div class="totales">
+                    <span>@Carrito.CantidadTotal @(Carrito.CantidadTotal == 1 ? "producto" : "productos")</span>
+                    <span class="total-monto">Total: @Formato.Precio(Carrito.Total)</span>
+                </div>
+                <div class="acciones">
+                    @if (paso == Paso.Carrito)
+                    {
+                        <button class="btn-secundario" @onclick="Carrito.Vaciar">Vaciar</button>
+                        <button class="btn-primario" @onclick="() => paso = Paso.Datos">Continuar</button>
+                    }
+                    else
+                    {
+                        <button class="btn-secundario" @onclick="() => paso = Paso.Carrito" disabled="@enviando">Volver</button>
+                        <button class="btn-primario" type="submit" form="form-compra" disabled="@enviando">
+                            @(enviando ? "Procesando…" : "Confirmar compra")
+                        </button>
+                    }
+                </div>
+            </footer>
+        }
+    }
+</Modal>
+
+@code {
+    private enum Paso { Carrito, Datos, Exito }
+
+    private class DatosCliente
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ingresá tu nombre")]
+        [System.ComponentModel.DataAnnotations.StringLength(80, MinimumLength = 2, ErrorMessage = "Debe tener entre 2 y 80 caracteres")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ingresá tu email")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Ingresá un email válido")]
+        [System.ComponentModel.DataAnnotations.StringLength(120)]
+        public string Email { get; set; } = string.Empty;
+    }
+
+    private Paso paso = Paso.Carrito;
+    private DatosCliente datos = new();
+    private Venta? ventaConfirmada;
+    private string? error;
+    private bool enviando;
+    private bool estabaAbierto;
+
+    protected override void OnInitialized() => Carrito.OnChange += Refrescar;
+
+    private void Refrescar() => InvokeAsync(() =>
+    {
+        // Al abrir de nuevo el carrito, se arranca siempre en el paso 1 y sin mensajes viejos.
+        if (Carrito.Abierto && !estabaAbierto)
+        {
+            if (paso == Paso.Exito) { paso = Paso.Carrito; ventaConfirmada = null; datos = new(); }
+            error = null;
+        }
+        estabaAbierto = Carrito.Abierto;
+        if (Carrito.Lineas.Count == 0 && paso == Paso.Datos) paso = Paso.Carrito;
+        StateHasChanged();
+    });
+
+    private void Cambiar(int productoId, int cantidad)
+    {
+        var r = Carrito.CambiarCantidad(productoId, cantidad);
+        error = r.Ok ? null : r.Mensaje;
+    }
+
+    private async Task Confirmar()
+    {
+        enviando = true;
+        error = null;
+        try
+        {
+            ventaConfirmada = await VentaService.RegistrarVenta(datos.Nombre, datos.Email, Carrito.Lineas.ToList());
+            Carrito.Vaciar();
+            paso = Paso.Exito;
+        }
+        catch (StockInsuficienteException ex)
+        {
+            // El stock cambió desde que se armó el carrito: se vuelve al paso 1 y se avisa.
+            error = ex.Message + " Revisá las cantidades de tu carrito.";
+            paso = Paso.Carrito;
+        }
+        catch (InvalidOperationException ex)
+        {
+            error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            // Cualquier otro error (ej. la base no responde): se informa sin cerrar el carrito.
+            Logger.LogError(ex, "Error al confirmar la compra");
+            error = "No pudimos registrar tu compra en este momento. Tu carrito se conservó; probá de nuevo.";
+        }
+        finally
+        {
+            enviando = false;
+        }
+    }
+
+    private void Cerrar()
+    {
+        if (paso == Paso.Exito) { paso = Paso.Carrito; ventaConfirmada = null; datos = new(); }
+        else if (paso == Paso.Datos) paso = Paso.Carrito;
+        Carrito.Cerrar();
+    }
+
+    public void Dispose() => Carrito.OnChange -= Refrescar;
+}

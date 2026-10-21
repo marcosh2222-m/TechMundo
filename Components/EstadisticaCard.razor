@@ -1,0 +1,20 @@
+@* EstadisticaCard — Unidad 1: componente reutilizable de estadística.
+   Se usa en la barra de estadísticas del panel (AdminLayout), en el resumen del
+   historial de ventas y en el dashboard, evitando duplicar el
+   mismo markup en dos lugares (criterio de "código limpio, sin duplicación"). *@
+
+<div class="estadistica @(Compacta ? "compacta" : "card") @(Aviso ? "aviso" : "")">
+    <span class="estadistica-valor">@Valor</span>
+    <span class="estadistica-label">@Etiqueta</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Valor { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Etiqueta { get; set; } = string.Empty;
+
+    /// <summary>Resalta la estadística (ej. stock bajo &gt; 0) con el color de alerta.</summary>
+    [Parameter] public bool Aviso { get; set; }
+
+    /// <summary>True = formato angosto para el header; false = tarjeta grande para el dashboard.</summary>
+    [Parameter] public bool Compacta { get; set; }
+}

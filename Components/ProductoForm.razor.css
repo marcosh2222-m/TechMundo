@@ -1,0 +1,5 @@
+.acciones-form { display: flex; gap: var(--espacio-m); margin-top: var(--espacio-m); }
+.campo-checkbox { margin-bottom: var(--espacio-l); }
+.label-checkbox { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--color-texto); cursor: pointer; }
+/* InputCheckbox es un componente hijo: su <input> no lleva el atributo de scope, por eso ::deep */
+.label-checkbox ::deep input { width: 16px; height: 16px; }

@@ -1,0 +1,205 @@
+@inherits LayoutComponentBase
+@inject AdminAccessState AccessState
+@inject IProductoService ProductoService
+@inject ProtectedSessionStorage Storage
+@inject IJSRuntime JS
+@inject ILogger<AdminLayout> Logger
+@implements IAsyncDisposable
+
+@if (verificandoSesion)
+{
+    <div class="admin-gate"><p class="gate-cargando">Verificando acceso…</p></div>
+}
+else if (!AccessState.Autenticado)
+{
+    <div class="admin-gate">
+        <main class="gate-card">
+            <h1>TechMundo <span class="gate-admin-tag">Admin</span></h1>
+
+            @if (!AccessState.Configurado)
+            {
+                <p class="gate-error">
+                    El panel está deshabilitado: falta configurar el PIN (<code>AdminPin</code>)
+                    en las variables de entorno del servidor.
+                </p>
+            }
+            else
+            {
+                <p>Ingresá el PIN para acceder al panel de gestión.</p>
+
+                <form @onsubmit="Ingresar" @onsubmit:preventDefault="true">
+                    <input type="password" inputmode="numeric" @bind="pin" @bind:event="oninput"
+                           placeholder="PIN" class="gate-input" aria-label="PIN de administrador" autofocus />
+                    @if (mensajeError is not null)
+                    {
+                        <p class="gate-error" role="alert">@mensajeError</p>
+                    }
+                    <button type="submit" class="btn-primario gate-btn">Ingresar</button>
+                </form>
+            }
+
+            <a href="/" class="gate-volver">← Volver al catálogo</a>
+        </main>
+    </div>
+}
+else
+{
+    <div class="admin-page">
+        <header class="admin-header">
+            <span class="admin-logo">TechMundo <span class="gate-admin-tag">Admin</span></span>
+
+            <nav aria-label="Navegación del panel">
+                <NavLink href="/admin" Match="NavLinkMatch.All"><i class="bi bi-speedometer2"></i> Dashboard</NavLink>
+                <NavLink href="/admin/productos"><i class="bi bi-box-seam"></i> Productos</NavLink>
+                <NavLink href="/admin/ventas"><i class="bi bi-receipt"></i> Ventas</NavLink>
+            </nav>
+
+            <div class="admin-header-acciones">
+                <a href="/" target="_blank" rel="noopener">Ver catálogo ↗</a>
+                <button class="btn-icono" @onclick="ToggleModoOscuro" aria-label="Alternar modo oscuro" title="Modo oscuro">🌓</button>
+                <button class="btn-secundario btn-sm" @onclick="CerrarSesion">Cerrar sesión</button>
+            </div>
+        </header>
+
+        @if (stats is not null)
+        {
+            <aside class="admin-stats" aria-label="Estadísticas de inventario">
+                <EstadisticaCard Valor="@stats.TotalProductos.ToString()" Etiqueta="Productos:" Compacta="true" />
+                <EstadisticaCard Valor="@Formato.Monto(stats.ValorInventario)" Etiqueta="Valor de inventario:" Compacta="true" />
+                <EstadisticaCard Valor="@stats.ProductosStockBajo.ToString()" Etiqueta="Stock bajo:" Compacta="true" Aviso="@(stats.ProductosStockBajo > 0)" />
+            </aside>
+        }
+
+        <main class="admin-main">
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>@Body</ChildContent>
+                <ErrorContent>
+                    <div class="error-boundary" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h2>Algo salió mal</h2>
+                        <p>No pudimos mostrar esta sección del panel. Probá de nuevo en unos segundos.</p>
+                        <div class="acciones">
+                            <button class="btn-primario" @onclick="() => errorBoundary?.Recover()">Reintentar</button>
+                            <a class="btn-secundario btn-link-boton" href="/admin">Ir al dashboard</a>
+                        </div>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        </main>
+
+        <footer class="admin-footer">
+            TechMundo · Panel de administración · Precios en pesos argentinos
+        </footer>
+    </div>
+}
+
+@code {
+    private const string ClaveSesion = "techmundo.admin";
+
+    private string pin = string.Empty;
+    private string? mensajeError;
+    private bool verificandoSesion = true;
+    private EstadisticasInventario? stats;
+    private IJSObjectReference? _modulo;
+    private ErrorBoundary? errorBoundary;
+
+    protected override void OnInitialized()
+    {
+        ProductoService.OnChange += ManejarCambio;
+        // Si ya se ingresó en esta pestaña (otra página del admin), no hace falta verificar.
+        if (AccessState.Autenticado) verificandoSesion = false;
+    }
+
+    protected override void OnParametersSet() => errorBoundary?.Recover();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        if (verificandoSesion)
+        {
+            // Recupera la sesión guardada (cifrada) en sessionStorage: recargar con F5 ya no pide el PIN.
+            try
+            {
+                var guardada = await Storage.GetAsync<string>(ClaveSesion);
+                if (guardada.Success) AccessState.RestaurarSesion(guardada.Value);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                Logger.LogInformation(ex, "No se pudo leer la sesión de admin guardada");
+            }
+            verificandoSesion = false;
+        }
+
+        if (AccessState.Autenticado) await CargarStats();
+        StateHasChanged();
+
+        try
+        {
+            _modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+            await _modulo.InvokeVoidAsync("aplicarModoOscuroGuardado");
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException ex) { Logger.LogWarning(ex, "No se pudo cargar interop.js"); }
+    }
+
+    private async Task Ingresar()
+    {
+        var resultado = AccessState.Ingresar(pin);
+        pin = string.Empty;
+
+        mensajeError = resultado switch
+        {
+            ResultadoIngreso.Incorrecto => "PIN incorrecto. Probá de nuevo.",
+            ResultadoIngreso.Bloqueado => $"Demasiados intentos fallidos. Esperá {AccessState.SegundosBloqueo} segundos.",
+            ResultadoIngreso.NoConfigurado => "El panel no tiene PIN configurado.",
+            _ => null
+        };
+
+        if (resultado == ResultadoIngreso.Ok)
+        {
+            await CargarStats();
+            try { await Storage.SetAsync(ClaveSesion, AccessState.HuellaSesion); }
+            catch (Exception ex) when (ex is JSException or InvalidOperationException) { /* sin persistencia: se pedirá el PIN al recargar */ }
+        }
+    }
+
+    private async Task CerrarSesion()
+    {
+        AccessState.Salir();
+        try { await Storage.DeleteAsync(ClaveSesion); }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException) { }
+    }
+
+    // Llega desde cualquier pestaña (CambiosCatalogo es Singleton): siempre por InvokeAsync.
+    private void ManejarCambio() => InvokeAsync(async () =>
+    {
+        if (!AccessState.Autenticado) return;
+        await CargarStats();
+        StateHasChanged();
+    });
+
+    private async Task CargarStats()
+    {
+        try { stats = await ProductoService.ObtenerEstadisticas(); }
+        catch (Exception ex) { Logger.LogError(ex, "No se pudieron calcular las estadísticas"); }
+    }
+
+    private async Task ToggleModoOscuro()
+    {
+        if (_modulo is null) return;
+        try { await _modulo.InvokeVoidAsync("toggleModoOscuro"); }
+        catch (JSException ex) { Logger.LogWarning(ex, "No se pudo alternar el modo oscuro"); }
+    }
+
+    // Solo IAsyncDisposable: si se implementan los dos, Blazor llama únicamente a DisposeAsync.
+    public async ValueTask DisposeAsync()
+    {
+        ProductoService.OnChange -= ManejarCambio;
+        if (_modulo is not null)
+        {
+            try { await _modulo.DisposeAsync(); }
+            catch (JSDisconnectedException) { /* circuito ya cerrado */ }
+        }
+    }
+}

@@ -1,0 +1,70 @@
+.producto-card {
+    display: flex;
+    gap: var(--espacio-m);
+    align-items: flex-start;
+    background: var(--color-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    padding: var(--espacio-m);
+    margin-bottom: var(--espacio-m);
+    flex-wrap: wrap;
+    transition: opacity 0.15s ease;
+}
+
+.producto-card.no-disponible { opacity: 0.55; }
+
+.producto-imagen {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: var(--radio-borde);
+    overflow: hidden;
+    background-color: var(--color-fondo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--color-texto-claro);
+}
+.producto-imagen ::deep img { width: 100%; height: 100%; object-fit: cover; }
+
+.producto-info { flex: 1; min-width: 180px; }
+.producto-titulo-row { display: flex; align-items: center; gap: var(--espacio-s); flex-wrap: wrap; }
+.producto-nombre { font-weight: 600; font-size: 0.95rem; margin: 0; letter-spacing: 0; }
+.producto-marca { font-size: 0.78rem; color: var(--color-texto-claro); display: block; }
+.producto-desc { font-size: 0.85rem; color: var(--color-texto-claro); margin: var(--espacio-s) 0 0; }
+
+.producto-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-m);
+    margin-top: var(--espacio-s);
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+.producto-precio { font-weight: 700; color: var(--color-texto); }
+.producto-stock { color: var(--color-texto-claro); }
+
+.producto-acciones { display: flex; align-items: center; gap: var(--espacio-s); flex-wrap: wrap; align-self: center; }
+
+/* Switch de Disponible — binding + evento nativo, sin JS (Unidad 1, Clase 3) */
+.switch-disponible { position: relative; display: inline-block; width: 38px; height: 22px; }
+.switch-disponible input { opacity: 0; width: 0; height: 0; }
+.switch-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background-color: var(--color-borde);
+    border-radius: 999px;
+    transition: 0.15s;
+}
+.switch-slider::before {
+    content: "";
+    position: absolute;
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.15s;
+}
+.switch-disponible input:checked + .switch-slider { background-color: var(--color-exito); }
+.switch-disponible input:checked + .switch-slider::before { transform: translateX(16px); }
+.producto-imagen ::deep .imagen-placeholder i { font-size: 2rem; }

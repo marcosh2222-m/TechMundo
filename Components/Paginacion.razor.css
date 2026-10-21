@@ -1,0 +1,9 @@
+.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--espacio-l);
+    margin-top: var(--espacio-l);
+    font-size: 0.85rem;
+    color: var(--color-texto-claro);
+}

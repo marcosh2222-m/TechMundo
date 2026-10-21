@@ -1,0 +1,7 @@
+@inherits LayoutComponentBase
+@* Layout sin dependencias (no consulta la base): lo usa la página de error, que tiene
+   que poder mostrarse aunque justamente la base de datos sea lo que falló. *@
+
+<main class="pagina-error">
+    @Body
+</main>

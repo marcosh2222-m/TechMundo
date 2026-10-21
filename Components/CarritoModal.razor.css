@@ -1,0 +1,41 @@
+.carrito-vacio { text-align: center; padding: var(--espacio-xl) 0; color: var(--color-texto-claro); }
+.carrito-vacio i { font-size: 3rem; opacity: 0.6; }
+
+.linea { display: flex; gap: var(--espacio-m); padding: var(--espacio-m) 0; border-bottom: 1px solid var(--color-borde); align-items: center; }
+.linea:last-child { border-bottom: none; }
+
+.linea-img { width: 64px; height: 64px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: var(--color-fondo); display: flex; align-items: center; justify-content: center; }
+.linea-img ::deep img { width: 100%; height: 100%; object-fit: cover; }
+.linea-img ::deep .imagen-placeholder i { font-size: 1.8rem; }
+
+.linea-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.linea-nombre { font-size: 0.9rem; font-weight: 600; }
+.linea-precio { font-size: 0.78rem; color: var(--color-texto-claro); }
+
+.cantidad { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; }
+.cantidad button {
+    width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--color-borde);
+    background: transparent; color: var(--color-texto); cursor: pointer; line-height: 1; padding: 0; font-size: 1rem;
+}
+.cantidad button:disabled { opacity: 0.35; cursor: not-allowed; }
+.cantidad span { min-width: 28px; text-align: center; font-size: 0.9rem; }
+
+.linea-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.linea-subtotal { font-weight: 700; font-size: 0.95rem; }
+.btn-quitar { background: transparent; border: none; color: var(--color-texto-claro); cursor: pointer; }
+.btn-quitar:hover { color: var(--color-peligro); }
+
+.resumen-lista { list-style: none; padding: 0; margin: 0 0 var(--espacio-m); font-size: 0.88rem; }
+.resumen-lista li { display: flex; justify-content: space-between; gap: var(--espacio-m); padding: 6px 0; border-bottom: 1px dashed var(--color-borde); }
+
+.totales { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--espacio-m); font-size: 0.85rem; color: var(--color-texto-claro); }
+.total-monto { font-size: 1.25rem; font-weight: 700; color: var(--color-texto); }
+.acciones { display: flex; justify-content: flex-end; gap: var(--espacio-s); }
+.acciones .btn-primario { color: white; }
+
+
+.exito { text-align: center; padding: var(--espacio-xl); }
+.exito .btn-primario { color: white; margin-top: var(--espacio-m); }
+.exito-icono { font-size: 3rem; color: var(--color-exito); }
+.exito p { color: var(--color-texto-claro); font-size: 0.9rem; }
+.exito .resumen-lista { text-align: left; }

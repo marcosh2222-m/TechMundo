@@ -1,0 +1,109 @@
+@* ProductoModal — detalle del producto (descripción, características, stock) con el botón
+   "Agregar al carrito". Usa el componente genérico <Modal> (overlay, Escape, foco). *@
+
+@inject CarritoState Carrito
+@inject IProductoService ProductoService
+
+<Modal Visible="Producto is not null" OnCerrar="Cerrar" Etiqueta="@Producto?.Nombre" AnchoMaximo="640">
+    @if (Producto is not null)
+    {
+        <div class="dialogo-producto">
+            <div class="dialogo-imagen">
+                <ImagenProducto Url="@Producto.ImagenUrl" Alt="@Producto.Nombre" />
+            </div>
+
+            <div class="dialogo-info">
+                @if (!string.IsNullOrWhiteSpace(Producto.Marca))
+                {
+                    <span class="dialogo-marca">@Producto.Marca</span>
+                }
+                <h2>@Producto.Nombre</h2>
+                <span class="badge">@(Producto.Categoria?.Nombre ?? "Sin categoría")</span>
+
+                @if (!string.IsNullOrWhiteSpace(Producto.Descripcion))
+                {
+                    <p class="dialogo-desc">@Producto.Descripcion</p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Producto.Caracteristicas))
+                {
+                    <h3 class="dialogo-subtitulo">Características</h3>
+                    <ul class="dialogo-caracteristicas">
+                        @foreach (var linea in Producto.Caracteristicas.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        {
+                            <li>@linea</li>
+                        }
+                    </ul>
+                }
+
+                <span class="dialogo-precio">@Formato.Precio(Producto.Precio)</span>
+
+                @if (Producto.StockBajo)
+                {
+                    <p class="dialogo-stock-bajo">⚠️ ¡Últimas unidades disponibles! (@Producto.Stock en stock)</p>
+                }
+                else
+                {
+                    <p class="dialogo-stock">@Producto.Stock unidades en stock</p>
+                }
+
+                @if (mensaje is not null)
+                {
+                    <div class="aviso-carrito @(esError ? "error" : "ok")" role="status">
+                        @mensaje
+                        @if (!esError)
+                        {
+                            <button class="link-carrito" @onclick="IrAlCarrito">Ver carrito</button>
+                        }
+                    </div>
+                }
+
+                <button class="btn-primario btn-comprar" @onclick="Agregar" disabled="@(!Producto.Disponible || Producto.Stock <= 0)">
+                    <i class="bi bi-cart-plus"></i> Agregar al carrito
+                </button>
+            </div>
+        </div>
+    }
+</Modal>
+
+@code {
+    [Parameter] public Producto? Producto { get; set; }
+    [Parameter] public EventCallback OnCerrar { get; set; }
+
+    private string? mensaje;
+    private bool esError;
+    private int? ultimoId;
+
+    protected override void OnParametersSet()
+    {
+        // Solo se limpia el mensaje al abrir OTRO producto (no en cada re-render del padre).
+        if (Producto?.Id != ultimoId) { mensaje = null; ultimoId = Producto?.Id; }
+    }
+
+    private async Task Agregar()
+    {
+        if (Producto is null) return;
+
+        // Se vuelve a leer el producto de la base: valida disponibilidad y stock con datos frescos,
+        // no con los que se cargaron cuando se abrió la lista.
+        var actual = await ProductoService.ObtenerPorId(Producto.Id);
+        if (actual is null)
+        {
+            esError = true;
+            mensaje = "Este producto ya no está en el catálogo.";
+            return;
+        }
+
+        var r = Carrito.Agregar(actual);
+        esError = !r.Ok;
+        mensaje = r.Ok ? $"✓ Agregado al carrito ({Carrito.CantidadDe(actual.Id)} en total)." : r.Mensaje;
+    }
+
+    private async Task IrAlCarrito()
+    {
+        await Cerrar();
+        Carrito.Abrir();
+    }
+
+    private async Task Cerrar() => await OnCerrar.InvokeAsync();
+}

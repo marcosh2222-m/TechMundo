@@ -1,0 +1,9 @@
+<div class="alert-error" role="alert">
+    <span>⚠️ @Mensaje</span>
+    <button class="btn-cerrar" @onclick="() => OnCerrar.InvokeAsync()" aria-label="Cerrar">✕</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Mensaje { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnCerrar { get; set; }
+}

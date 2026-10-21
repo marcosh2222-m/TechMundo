@@ -1,0 +1,99 @@
+@* ProductoCarrusel — carrusel de destacados, 100% Blazor/CSS (sin JS externo).
+   El "deslizamiento" es un transform: translateX calculado en C# y animado
+   por CSS transition — mismo principio que ConfirmDialog. *@
+
+@implements IDisposable
+
+@if (Productos.Count > 0)
+{
+    <div class="carrusel" @onmouseenter="() => pausado = true" @onmouseleave="() => pausado = false">
+        <button class="carrusel-flecha izq" @onclick="Anterior" aria-label="Anterior" disabled="@(Productos.Count <= 1)">‹</button>
+
+        <div class="carrusel-viewport">
+            <div class="carrusel-track" style="transform: translateX(-@(indice * 100)%)">
+                @for (var i = 0; i < Productos.Count; i++)
+                {
+                    var p = Productos[i];
+                    var activo = i == indice;
+                    @* Solo la diapositiva visible es enfocable con Tab; se abre con clic o Enter. *@
+                    <div class="carrusel-item" role="button" tabindex="@(activo ? 0 : -1)" aria-hidden="@(activo ? "false" : "true")"
+                         aria-label="@($"Ver detalle de {p.Nombre}")"
+                         @onclick="() => OnSeleccionar.InvokeAsync(p)"
+                         @onkeydown="e => AbrirConTeclado(e, p)">
+                        <div class="carrusel-imagen">
+                            <ImagenProducto Url="@p.ImagenUrl" Alt="@p.Nombre" Icono="bi-stars" />
+                        </div>
+                        <div class="carrusel-texto">
+                            <span class="carrusel-etiqueta">Destacado</span>
+                            <h2>@p.Nombre</h2>
+                            <p>@p.Descripcion</p>
+                            <span class="carrusel-precio">@Formato.Precio(p.Precio)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button class="carrusel-flecha der" @onclick="Siguiente" aria-label="Siguiente" disabled="@(Productos.Count <= 1)">›</button>
+
+        @if (Productos.Count > 1)
+        {
+            <div class="carrusel-puntos">
+                @for (var i = 0; i < Productos.Count; i++)
+                {
+                    var idx = i;
+                    <button class="punto @(idx == indice ? "activo" : "")" @onclick="() => IrA(idx)" aria-label="@($"Ir al destacado {idx + 1}")"></button>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<Producto> Productos { get; set; } = new();
+    [Parameter] public EventCallback<Producto> OnSeleccionar { get; set; }
+
+    private int indice = 0;
+
+    // Autoplay: un Timer avanza el carrusel solo cada IntervaloMs. Se pausa mientras
+    // el mouse está sobre el carrusel y se reinicia al navegar manualmente.
+    private const int IntervaloMs = 4000;
+    private System.Threading.Timer? timer;
+    private bool pausado;
+
+    protected override void OnParametersSet()
+    {
+        // Si la lista de destacados se achicó (ej. se agotó un producto), no quedar en una diapositiva vacía.
+        if (indice >= Productos.Count) indice = 0;
+    }
+
+    private async Task AbrirConTeclado(KeyboardEventArgs e, Producto p)
+    {
+        if (e.Key == "Enter") await OnSeleccionar.InvokeAsync(p);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // OnAfterRender solo corre en modo interactivo (no durante el prerender).
+        if (firstRender) ReiniciarTimer();
+    }
+
+    private void ReiniciarTimer()
+    {
+        timer?.Dispose();
+        timer = new System.Threading.Timer(_ => InvokeAsync(AvanzarAuto), null, IntervaloMs, IntervaloMs);
+    }
+
+    private void AvanzarAuto()
+    {
+        if (pausado || Productos.Count <= 1) return;
+        indice = (indice + 1) % Productos.Count;
+        StateHasChanged();
+    }
+
+    private void Siguiente() { indice = (indice + 1) % Productos.Count; ReiniciarTimer(); }
+    private void Anterior() { indice = (indice - 1 + Productos.Count) % Productos.Count; ReiniciarTimer(); }
+    private void IrA(int i) { indice = i; ReiniciarTimer(); }
+
+    public void Dispose() => timer?.Dispose();
+}

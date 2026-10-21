@@ -1,0 +1,174 @@
+@inherits LayoutComponentBase
+@inject IProductoService ProductoService
+@inject CarritoState Carrito
+@inject ProtectedSessionStorage Storage
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject ILogger<CatalogoLayout> Logger
+@implements IAsyncDisposable
+
+<div class="tienda">
+    <header class="tienda-header">
+        <a href="/" class="tienda-logo">TechMundo</a>
+
+        <form class="tienda-header-buscador" role="search" @onsubmit="Buscar" @onsubmit:preventDefault="true">
+            <input type="search" placeholder="Buscar productos..." class="buscador-input" aria-label="Buscar productos"
+                   @bind="busqueda" @bind:event="oninput" />
+            <button type="submit" class="buscador-boton" aria-label="Buscar"><i class="bi bi-search"></i></button>
+        </form>
+
+        <div class="header-acciones">
+            <button class="btn-carrito" @onclick="Carrito.Abrir" aria-label="@($"Abrir carrito ({Carrito.CantidadTotal} productos)")" title="Carrito">
+                <i class="bi bi-cart3"></i>
+                @if (Carrito.CantidadTotal > 0)
+                {
+                    <span class="contador">@Carrito.CantidadTotal</span>
+                }
+            </button>
+            <button class="btn-icono" @onclick="ToggleModoOscuro" aria-label="Alternar modo oscuro" title="Modo oscuro">
+                🌓
+            </button>
+        </div>
+    </header>
+
+    <div class="tienda-body">
+        <aside class="tienda-sidebar" aria-label="Categorías">
+            <h2>Categorías</h2>
+            <nav>
+                <NavLink href="/" Match="NavLinkMatch.All">Todas</NavLink>
+                @foreach (var c in categorias)
+                {
+                    <NavLink href="@($"/categoria/{c.Nombre.ToLowerInvariant()}")">@c.Nombre</NavLink>
+                }
+            </nav>
+        </aside>
+
+        <main class="tienda-main">
+            @* Si una página falla, se muestra este aviso en lugar de romper toda la app (Unidad 3:
+               "manejo de errores visible en la UI, sin pantalla de muerte"). *@
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>@Body</ChildContent>
+                <ErrorContent>
+                    <div class="error-boundary" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h2>Algo salió mal</h2>
+                        <p>No pudimos mostrar esta sección. Probá de nuevo en unos segundos.</p>
+                        <div class="acciones">
+                            <button class="btn-primario" @onclick="Reintentar">Reintentar</button>
+                            <a class="btn-secundario btn-link-boton" href="/">Ir al inicio</a>
+                        </div>
+                    </div>
+                </ErrorContent>
+            </ErrorBoundary>
+        </main>
+    </div>
+
+    <CarritoModal />
+
+    <footer class="tienda-footer">
+        <p>TechMundo &copy; @DateTime.Now.Year — Proyecto Integrador, Desarrollo Web con Blazor</p>
+        <p class="aviso-precios">Precios expresados en pesos argentinos (ARS).</p>
+        <a href="/admin" class="link-admin">Acceso administrador</a>
+    </footer>
+</div>
+
+@code {
+    private const string ClaveCarrito = "techmundo.carrito";
+
+    private List<Categoria> categorias = new();
+    private string busqueda = string.Empty;
+    private IJSObjectReference? _modulo;
+    private ErrorBoundary? errorBoundary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Carrito.OnChange += CarritoCambio;
+        try
+        {
+            categorias = await ProductoService.ObtenerCategorias();
+        }
+        catch (Exception ex)
+        {
+            // Sin categorías la tienda sigue funcionando (solo queda el link "Todas").
+            Logger.LogError(ex, "No se pudieron cargar las categorías");
+        }
+    }
+
+    // Al navegar a otra página se "resetea" el ErrorBoundary por si la anterior había fallado.
+    protected override void OnParametersSet() => errorBoundary?.Recover();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        await RestaurarCarrito();
+
+        try
+        {
+            // Import dinámico del módulo ES6 (Unidad 2, Clase 13) — recién acá,
+            // porque IJSRuntime solo puede invocarse una vez que el componente se renderizó.
+            _modulo = await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+            await _modulo.InvokeVoidAsync("aplicarModoOscuroGuardado");
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException ex) { Logger.LogWarning(ex, "No se pudo cargar interop.js"); }
+    }
+
+    /// <summary>
+    /// El carrito vive en memoria del circuito (CarritoState). Para que no se pierda al
+    /// recargar con F5, se guarda cifrado en el sessionStorage de la pestaña
+    /// (ProtectedSessionStorage) y se recupera al volver a conectarse.
+    /// </summary>
+    private async Task RestaurarCarrito()
+    {
+        try
+        {
+            var guardado = await Storage.GetAsync<List<LineaCarrito>>(ClaveCarrito);
+            if (guardado.Success && guardado.Value is { Count: > 0 } lineas && Carrito.Lineas.Count == 0)
+                Carrito.Restaurar(lineas);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Datos viejos o cifrados con otra clave: se descartan sin molestar al usuario.
+            Logger.LogInformation(ex, "No se pudo restaurar el carrito guardado");
+            try { await Storage.DeleteAsync(ClaveCarrito); } catch { /* sin conexión */ }
+        }
+    }
+
+    private void CarritoCambio() => InvokeAsync(async () =>
+    {
+        StateHasChanged();
+        try { await Storage.SetAsync(ClaveCarrito, Carrito.Lineas.ToList()); }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException)
+        {
+            // Si no se puede guardar, el carrito sigue funcionando en memoria.
+        }
+    });
+
+    private void Buscar()
+    {
+        var texto = busqueda.Trim();
+        Nav.NavigateTo(texto.Length == 0 ? "/" : $"/?q={Uri.EscapeDataString(texto)}");
+    }
+
+    private void Reintentar() => errorBoundary?.Recover();
+
+    private async Task ToggleModoOscuro()
+    {
+        if (_modulo is null) return;
+        try { await _modulo.InvokeVoidAsync("toggleModoOscuro"); }
+        catch (JSException ex) { Logger.LogWarning(ex, "No se pudo alternar el modo oscuro"); }
+    }
+
+    // Solo IAsyncDisposable: si un componente implementa también IDisposable, Blazor llama
+    // únicamente a DisposeAsync, así que la desuscripción tiene que estar acá.
+    public async ValueTask DisposeAsync()
+    {
+        Carrito.OnChange -= CarritoCambio;
+        if (_modulo is not null)
+        {
+            try { await _modulo.DisposeAsync(); }
+            catch (JSDisconnectedException) { /* el circuito ya se cerró, no hay nada que liberar */ }
+        }
+    }
+}

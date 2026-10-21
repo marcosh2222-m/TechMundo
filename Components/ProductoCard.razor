@@ -1,0 +1,114 @@
+@* ProductoCard — Unidad 1 (Parámetros, EventCallback, toggle) + Unidad 2 (CSS Isolation) *@
+@implements IAsyncDisposable
+<article class="producto-card @(!Producto.Disponible ? "no-disponible" : "")">
+    <div class="producto-imagen">
+        <ImagenProducto Url="@Producto.ImagenUrl" Alt="@Producto.Nombre" />
+    </div>
+
+    <div class="producto-info">
+        <div class="producto-titulo-row">
+            <h3 class="producto-nombre">@Producto.Nombre</h3>
+            @if (Producto.StockBajo)
+            {
+                <span class="badge aviso">Stock bajo</span>
+            }
+            @if (!Producto.Disponible)
+            {
+                <span class="badge">No disponible</span>
+            }
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Producto.Marca))
+        {
+            <span class="producto-marca">@Producto.Marca</span>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Producto.Descripcion))
+        {
+            <p class="producto-desc">@Producto.Descripcion</p>
+        }
+
+        <div class="producto-meta">
+            <span class="producto-precio">@Formato.Precio(Producto.Precio)</span>
+            <span class="badge">@(Producto.Categoria?.Nombre ?? "Sin categoría")</span>
+            <span class="producto-stock">Stock: @Producto.Stock</span>
+        </div>
+    </div>
+
+    <div class="producto-acciones">
+        <label class="switch-disponible" title="Disponible para la venta">
+            <input type="checkbox" checked="@Producto.Disponible"
+                   @onchange="() => OnToggleDisponible.InvokeAsync(Producto.Id)" />
+            <span class="switch-slider"></span>
+        </label>
+        <button class="btn-secundario btn-sm" @onclick="() => OnEditar.InvokeAsync(Producto.Id)">
+            <i class="bi bi-pencil"></i> Editar
+        </button>
+        <button class="btn-secundario btn-sm" @onclick="CopiarNombre" title="Copiar el nombre al portapapeles">
+            <i class="bi @(copiado ? "bi-check2" : "bi-clipboard")"></i> @(copiado ? "¡Copiado!" : "Copiar")
+        </button>
+        <button class="btn-peligro btn-sm" @onclick="() => OnEliminarSolicitado.InvokeAsync(Producto)">
+            <i class="bi bi-trash"></i> Eliminar
+        </button>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public Producto Producto { get; set; } = default!;
+    [Parameter] public EventCallback<int> OnEditar { get; set; }
+    [Parameter] public EventCallback<int> OnToggleDisponible { get; set; }
+
+    /// <summary>
+    /// El componente ya NO decide ni ejecuta el borrado: solo avisa al padre que el
+    /// usuario quiere eliminar este producto. La confirmación la maneja la página
+    /// con &lt;ConfirmDialog&gt; (Blazor puro, sin JS externo — Unidad 1/4).
+    /// </summary>
+    [Parameter] public EventCallback<Producto> OnEliminarSolicitado { get; set; }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    private IJSObjectReference? _modulo;
+
+    /// <summary>
+    /// Import perezoso (Unidad 2, Clase 13): como esta tarjeta se repite muchas
+    /// veces en una lista, importar el módulo en OnAfterRenderAsync de cada
+    /// instancia importaría el mismo archivo N veces al cargar la página. En
+    /// cambio, se importa recién la primera vez que ESTA tarjeta puntual usa
+    /// "Copiar", y se cachea para los clics siguientes.
+    /// </summary>
+    private bool copiado;
+
+    private async Task CopiarNombre()
+    {
+        try
+        {
+            _modulo ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/interop.js");
+            await _modulo.InvokeVoidAsync("copiarAlPortapapeles", Producto.Nombre);
+        }
+        catch (JSException)
+        {
+            // El navegador puede negar el permiso del portapapeles (o no estar en HTTPS).
+            // Antes esta excepción no se capturaba y podía cortar la sesión de Blazor.
+            return;
+        }
+        catch (JSDisconnectedException)
+        {
+            return;
+        }
+
+        // Confirmación visual breve en el mismo botón.
+        copiado = true;
+        StateHasChanged();
+        await Task.Delay(1500);
+        copiado = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_modulo is not null)
+        {
+            try { await _modulo.DisposeAsync(); }
+            catch (JSDisconnectedException) { /* circuito ya cerrado */ }
+        }
+    }
+}

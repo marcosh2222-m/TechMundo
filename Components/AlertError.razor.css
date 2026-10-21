@@ -1,0 +1,13 @@
+.alert-error {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--color-peligro-bg);
+    color: var(--color-peligro);
+    border: 1px solid var(--color-peligro);
+    border-radius: var(--radio-borde);
+    padding: var(--espacio-m);
+    margin-bottom: var(--espacio-m);
+    font-size: 0.9rem;
+}
+.btn-cerrar { background: transparent; border: none; color: inherit; font-weight: bold; cursor: pointer; padding: 0 4px; }

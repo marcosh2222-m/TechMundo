@@ -1,0 +1,64 @@
+@* Modal — contenedor genérico de ventanas modales (Unidad 1: composición con RenderFragment).
+   Lo usan ProductoModal, CarritoModal, VentaDetalleModal y ConfirmDialog, así el overlay,
+   el botón de cerrar, el cierre con Escape / clic afuera y el foco están en un solo lugar.
+   100% Blazor: el foco se mueve con ElementReference.FocusAsync(), sin JS propio. *@
+
+@if (Visible)
+{
+    <div class="modal-overlay" @onclick="Cerrar">
+        <div class="modal-panel" role="@Rol" aria-modal="true" aria-label="@Etiqueta" tabindex="-1"
+             style="max-width: @(AnchoMaximo)px" @ref="panel"
+             @onclick:stopPropagation="true" @onkeydown="TeclaPresionada">
+            @if (MostrarCerrar)
+            {
+                <button class="modal-cerrar" @onclick="Cerrar" aria-label="Cerrar">✕</button>
+            }
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Si es true, el modal se muestra.</summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>Se dispara al pedir cerrar (botón ✕, clic en el fondo o tecla Escape).</summary>
+    [Parameter] public EventCallback OnCerrar { get; set; }
+
+    /// <summary>Contenido del modal (lo define el componente que lo usa).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Texto para lectores de pantalla.</summary>
+    [Parameter] public string? Etiqueta { get; set; }
+
+    /// <summary>"dialog" o "alertdialog" (confirmaciones).</summary>
+    [Parameter] public string Rol { get; set; } = "dialog";
+
+    [Parameter] public int AnchoMaximo { get; set; } = 560;
+    [Parameter] public bool MostrarCerrar { get; set; } = true;
+
+    private ElementReference panel;
+    private bool enfocado;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Al abrirse, el foco pasa al panel: así Escape funciona sin hacer clic antes.
+        if (Visible && !enfocado)
+        {
+            enfocado = true;
+            try { await panel.FocusAsync(); }
+            catch (JSException) { /* el panel ya no está en el DOM */ }
+        }
+        else if (!Visible)
+        {
+            enfocado = false;
+        }
+    }
+
+    private async Task TeclaPresionada(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await Cerrar();
+    }
+
+    private Task Cerrar() => OnCerrar.InvokeAsync();
+}

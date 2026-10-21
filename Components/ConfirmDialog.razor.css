@@ -1,0 +1,4 @@
+.dialogo { padding: var(--espacio-l); }
+.dialogo p { color: var(--color-texto-claro); font-size: 0.9rem; margin: 0 0 var(--espacio-l); }
+.acciones-dialogo { display: flex; justify-content: flex-end; gap: var(--espacio-s); }
+.btn-peligro-solido { background-color: var(--color-peligro); color: white; }
