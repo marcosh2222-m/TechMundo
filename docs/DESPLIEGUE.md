@@ -73,7 +73,7 @@ la carpeta y aplica las migraciones sola al iniciar.
   - `https://techmundo-tunombre.azurewebsites.net/health` → `Healthy`
   - `/admin` → ingresá con el `AdminPin` configurado
 - Opcional: App Service → **Supervisión → Comprobación de estado** → ruta `/health`.
-- Copiá la URL en la sección *About* del repo y reemplazá `TU_USUARIO` en el badge del README.
+- Copiá la URL en la sección *About* del repo (el badge del README ya apunta a `marcosh2222-m/TechMundo`).
 
 ## Problemas frecuentes
 
