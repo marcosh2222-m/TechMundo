@@ -1,0 +1,15 @@
+bin/
+obj/
+*.user
+*.db
+*.db-shm
+*.db-wal
+secrets.json
+appsettings.Local.json
+.vs/
+.vscode/
+
+# Publicación: carpeta generada y perfiles de Azure (contienen credenciales)
+publish/
+*.PublishSettings
+*.pubxml.user

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TechMundo</title>
+    <base href="/" />
+    @* Bootstrap 5.3.3 y Bootstrap Icons 1.11.3 servidos desde wwwroot/lib (antes por CDN):
+       la app no depende de un servicio externo durante la demo. *@
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="TechMundo.styles.css" />
+    <script>
+        // Fallback global de imágenes: si un <img> falla (URL caída, hotlink bloqueado) se oculta
+        // y se muestra el ícono por defecto (.imagen-placeholder, que sigue el modo oscuro).
+        // 'error' y 'load' no burbujean, por eso se escuchan en fase de captura. Si Blazor reutiliza
+        // el <img> con otra URL y esta carga bien, se revierte.
+        function marcarPlaceholder(img, mostrar) {
+            var ph = img.nextElementSibling;
+            if (!ph || !ph.classList.contains('imagen-placeholder')) return;
+            img.style.display = mostrar ? 'none' : '';
+            ph.classList.toggle('oculto', !mostrar);
+        }
+        document.addEventListener('error', function (e) {
+            if (e.target && e.target.tagName === 'IMG') marcarPlaceholder(e.target, true);
+        }, true);
+        document.addEventListener('load', function (e) {
+            if (e.target && e.target.tagName === 'IMG') marcarPlaceholder(e.target, false);
+        }, true);
+    </script>
+    <HeadOutlet @rendermode="ModoPagina" />
+</head>
+<body>
+    <script>
+        // Modo oscuro sin "destello": se aplica antes de que Blazor arranque.
+        // El toggle y su persistencia siguen en js/interop.js (JS Interop, Unidad 2).
+        if (localStorage.getItem('modoOscuro') === '1') document.body.classList.add('dark-mode');
+    </script>
+
+    @* Indicador de carga: como no hay prerender, la página está vacía hasta que se conecta
+       el circuito de Blazor. Se oculta solo por CSS cuando aparece cualquier layout. *@
+    <div id="carga-inicial" aria-live="polite">Cargando TechMundo…</div>
+
+    <Routes @rendermode="ModoPagina" />
+
+    @* Aviso que Blazor muestra solo si ocurre un error no controlado en el circuito. *@
+    <div id="blazor-error-ui" role="alert">
+        Ocurrió un error inesperado.
+        <a href="" class="reload">Recargar la página</a>
+        <a class="dismiss" aria-label="Cerrar">✕</a>
+    </div>
+
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
+
+@code {
+    // Sin prerender: evita que cada página consulte la base dos veces (prerender + circuito)
+    // y que el PIN del admin "parpadee" al recargar. La sesión del admin y el carrito
+    // se recuperan de sessionStorage al conectarse el circuito.
+    private static readonly IComponentRenderMode ModoInteractivo = new InteractiveServerRenderMode(prerender: false);
+
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+
+    // La página /Error se genera en el servidor (sin interactividad): así se muestra aunque el
+    // circuito de Blazor no pueda arrancar. Es el patrón de la plantilla oficial de .NET 8.
+    private IComponentRenderMode? ModoPagina =>
+        HttpContext.Request.Path.StartsWithSegments("/Error") ? null : ModoInteractivo;
+}
