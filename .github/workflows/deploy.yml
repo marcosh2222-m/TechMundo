@@ -1,0 +1,64 @@
+name: CI/CD
+
+# CI: compila en cada push y Pull Request a main o develop.
+# CD: solo un push a main (por ejemplo, al mergear develop → main) despliega en Azure.
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:   # permite lanzarlo a mano desde la pestaña Actions
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  # Nombre del App Service. Se puede cambiar sin tocar este archivo creando la variable
+  # AZURE_WEBAPP_NAME en Settings → Secrets and variables → Actions → Variables.
+  AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME || 'techmundo-blazor' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Publish
+        run: dotnet publish --no-build -c Release -o ./publish
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: techmundo
+          path: ./publish
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    steps:
+      - name: Descargar artefacto
+        uses: actions/download-artifact@v4
+        with:
+          name: techmundo
+          path: ./publish
+
+      - name: Deploy to Azure App Service
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
