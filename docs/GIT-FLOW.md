@@ -3,6 +3,11 @@
 Unidad 4, Clase 19. Guía para subir el proyecto con un historial limpio, trabajar con ramas y
 Pull Requests, y organizar el trabajo con issues y un tablero Kanban.
 
+> **Estado:** el repositorio ya está creado y subido en
+> [github.com/marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo), con las ramas `main` y
+> `develop` y los 5 issues iniciales (#1 a #5). Queda pendiente el laboratorio del Pull Request (paso 5). La sección "Primer push" queda como referencia del proceso; para trabajar
+> desde otra PC alcanza con `git clone https://github.com/marcosh2222-m/TechMundo.git`.
+
 ## Ramas
 
 | Rama | Para qué |

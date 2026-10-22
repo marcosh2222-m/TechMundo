@@ -1,6 +1,6 @@
 # Roadmap — TechMundo (Proyecto Integrador)
 
-Última actualización: 2026-10-20 · versión 1.0.0 (entrega)
+Última actualización: 2026-10-22 · versión 1.0.1 (entrega)
 
 Estado del proyecto frente a los requerimientos oficiales de las 4 unidades de
 "Desarrollo Web con Blazor". Cada ítem indica si está resuelto, pendiente, o es
@@ -62,11 +62,11 @@ Leyenda: ✅ Resuelto · ⚠️ Parcial / a revisar · ❌ Pendiente
 | README profesional | ✅ | Con diagrama Mermaid |
 | CHANGELOG.md | ✅ | Formato Keep a Changelog |
 | .gitignore | ✅ | |
-| GitHub Actions (build + deploy) | ✅ (workflow listo) | Falta que exista el repo real y los secrets de Azure |
+| GitHub Actions (build + deploy) | ✅ | Build en verde en cada push/PR; el deploy se activa al configurar Azure (variable `AZURE_WEBAPP_NAME` + secret) |
 | **XML docs en el servicio** (`///`, `<summary>`, `<param>`) | ✅ | Completos en `IProductoService`, `IVentaService` y `CarritoState`; el build genera `TechMundo.xml` |
 | Historias de usuario (Scrum/Kanban) | ✅ | `docs/HISTORIAS-DE-USUARIO.md`: 5 historias + DoD + backlog de 18; plantillas de issues y PR |
-| Repositorio GitHub con historial limpio | ❌ (acción tuya) | Pasos y commits sugeridos en `docs/GIT-FLOW.md` |
-| Aplicación desplegada en URL pública | ❌ (acción tuya) | Paso a paso en `docs/DESPLIEGUE.md` |
+| Repositorio GitHub con historial limpio | ✅ | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo): Conventional Commits, ramas `main` / `develop` / `docs/*`, issues |
+| Aplicación desplegada en URL pública | ❌ (pendiente) | Paso a paso en `docs/DESPLIEGUE.md` |
 | Health checks | ✅ | `/health` |
 | Logging con `ILogger<T>` | ✅ | Ya en `ProductoService` |
 | User Secrets en desarrollo | ✅ | `UserSecretsId` en el `.csproj`; el PIN de admin se configura con `dotnet user-secrets` (dev) o variable de entorno (Azure) |
@@ -140,12 +140,13 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] Componentes `Modal` e `ImagenProducto`, `Formato`, CSS unificado, accesibilidad por teclado
 - [x] Desborde horizontal en celulares corregido
 - [x] Verificado con 31 pruebas automáticas en Chromium (escritorio y 375 px)
-- [ ] **Vos:** regenerar la migración una última vez (cambió `Producto`) y desde ahí no volver a borrarla
+- [x] Migración inicial generada con dotnet-ef 8.0.10 y verificada con SQLite real en GitHub Actions
 
 **Ideas opcionales para después** (no están en la consigna)
 - [x] ~~Persistir el carrito~~ (hecho en v0.10.0, con `ProtectedSessionStorage`)
 - [ ] Anular una venta y devolver el stock
-- [ ] Mostrar ventas recientes / productos más vendidos en el Dashboard
+- [x] ~~Mostrar ventas recientes en el Dashboard~~ (hecho en v1.0.0)
+- [ ] Productos más vendidos en el Dashboard
 - [ ] `ICategoriaService` para gestionar categorías desde la UI
 - [ ] Tests (xUnit) para `CarritoState` y `VentaService`
 
@@ -156,10 +157,12 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] Workflow CI/CD separado en build y deploy
 - [x] Guía de despliegue en Azure (`docs/DESPLIEGUE.md`) y guion de defensa (`docs/DEFENSA.md`)
 - [x] Precios en pesos argentinos
-- [ ] **Vos:** regenerar la migración final y probar en tu PC
-- [ ] **Vos:** crear el repo, primer push por partes, rama `develop` y un PR (`docs/GIT-FLOW.md`)
-- [ ] **Vos:** 5 issues y tablero Kanban en GitHub
-- [ ] **Vos:** crear el App Service, cargar `AdminPin` y el secret, mergear a `main` (`docs/DESPLIEGUE.md`)
+- [x] Migración final generada y verificada con SQLite real (34 pruebas de navegador en verde)
+- [x] Repositorio público, historial por partes, ramas `main` / `develop` / `docs/*`
+- [ ] **Pendiente:** abrir, comentar y mergear un Pull Request (laboratorio de la Clase 19, `docs/GIT-FLOW.md`)
+- [x] 5 issues creados en GitHub con etiquetas `bug` / `enhancement` / `documentation`
+- [ ] **Pendiente:** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
+- [ ] **Pendiente:** crear el App Service, cargar `AdminPin`, el secret y la variable, mergear a `main` (`docs/DESPLIEGUE.md`)
 - [x] Capturas en el README (`docs/capturas/`)
 - [x] Matriz de requisitos (`docs/REQUISITOS.md`)
 - [x] Dashboard con ventas, `launchSettings.json`, Bootstrap local (v1.0.0)

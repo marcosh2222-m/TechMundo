@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.0.1] - 2026-10-22
+
+### Added
+- Migración `Inicial` generada con dotnet-ef 8.0.10 y verificada con SQLite real en GitHub Actions
+  (40 productos, 15 ventas, 26 ítems, 5 categorías; 34 pruebas de navegador en verde).
+- Repositorio público en GitHub con ramas `main` / `develop` y 5 issues iniciales (#1 a #5).
+
+### Changed
+- El job de deploy solo corre cuando existe la variable `AZURE_WEBAPP_NAME`: antes de configurar Azure el
+  workflow queda en verde en lugar de fallar en el paso de deploy.
+- Documentación actualizada al estado final (roadmap, matriz de requisitos, checklist de defensa, Git Flow).
+
 ## [1.0.0] - 2026-10-20
 
 Versión de entrega del Proyecto Integrador.

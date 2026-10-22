@@ -43,8 +43,8 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 
 | Requisito | Dónde | Estado |
 |---|---|---|
-| Repositorio GitHub con historial limpio (Conventional Commits) | `docs/GIT-FLOW.md` | Guía y commits sugeridos — lo hacés vos |
-| CI/CD con GitHub Actions | `.github/workflows/deploy.yml` | Listo: `build` en push/PR, `deploy` desde `main` |
+| Repositorio GitHub con historial limpio (Conventional Commits) | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo) | Listo: commits por tema, ramas `main` / `develop`, issues (falta mergear un Pull Request) |
+| CI/CD con GitHub Actions | `.github/workflows/deploy.yml` | Listo: `build` en push/PR; `deploy` desde `main` cuando Azure está configurado |
 | README profesional | `README.md` | Listo: descripción, stack, arquitectura, capturas, instalación, configuración |
 | App desplegada en URL pública | `docs/DESPLIEGUE.md` | Guía paso a paso — lo hacés vos |
 | Historias de usuario y DoD | `docs/HISTORIAS-DE-USUARIO.md` | Listo |
@@ -60,6 +60,6 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 | Interfaz visual: HTML5, CSS, Bootstrap responsive | 15 | Layouts semánticos, 17 `.razor.css`, mobile-first, modo oscuro |
 | JS Interop implementado correctamente | 10 | `interop.js` como módulo ES6, `IJSObjectReference`, `DisposeAsync`, manejo de `JSException` |
 | Persistencia con EF Core: CRUD, paginación, búsqueda | 20 | `ProductoService`, `VentaService` (transacción), migraciones, seed |
-| Git: historial limpio, ramas, CI/CD | 10 | `docs/GIT-FLOW.md`, workflow — **pendiente de que hagas el push** |
+| Git: historial limpio, ramas, CI/CD | 10 | Repositorio en GitHub, ramas, issues, workflow en verde (+ un Pull Request a mergear) |
 | Aplicación desplegada y accesible | 5 | `docs/DESPLIEGUE.md` — **pendiente de publicar** |
 | README y documentación | 5 | `README.md`, `docs/`, `CHANGELOG.md`, XML docs |
