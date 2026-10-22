@@ -11,9 +11,9 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  # Nombre del App Service. Se puede cambiar sin tocar este archivo creando la variable
-  # AZURE_WEBAPP_NAME en Settings → Secrets and variables → Actions → Variables.
-  AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME || 'techmundo-blazor' }}
+  # Nombre del App Service: variable AZURE_WEBAPP_NAME en Settings → Secrets and variables → Actions →
+  # Variables. Mientras no esté configurada, el job de deploy se saltea (ver docs/DESPLIEGUE.md).
+  AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
 
 jobs:
   build:
@@ -43,7 +43,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.AZURE_WEBAPP_NAME != ''
     runs-on: ubuntu-latest
     environment:
       name: production

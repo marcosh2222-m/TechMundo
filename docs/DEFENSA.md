@@ -5,11 +5,13 @@ publicada en Azure (no se acepta localhost). Abrila 5 minutos antes: el plan F1 
 
 ## Checklist de entrega (antes de la clase)
 
-- [ ] App desplegada en Azure con URL funcionando (`/health` responde `Healthy`)
-- [ ] Repositorio GitHub **público** con historial de commits limpio (Conventional Commits)
+- [ ] App desplegada en Azure con URL funcionando (`/health` responde `Healthy`) — **único pendiente**
+- [ ] Tablero Kanban en GitHub Projects con los 5 issues
+- [ ] Un Pull Request abierto, comentado y mergeado (`docs/GIT-FLOW.md`, paso 5)
+- [x] Repositorio GitHub **público** con historial de commits limpio (Conventional Commits)
 - [x] README completo: descripción, stack, instalación, capturas (`docs/capturas/`)
 - [x] CHANGELOG con al menos 3 versiones (hay más de 10)
-- [ ] GitHub Actions en verde (badge del README)
+- [x] GitHub Actions en verde (badge del README)
 - [x] Base de datos con datos de seed (40 productos, 15 ventas)
 - [x] Sin credenciales en el código (el PIN está en Azure / User Secrets)
 

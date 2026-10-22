@@ -61,7 +61,8 @@ la carpeta y aplica las migraciones sola al iniciar.
    - **Secrets** → *New repository secret* → nombre `AZURE_WEBAPP_PUBLISH_PROFILE` → pegar **todo** el
      contenido del archivo descargado.
    - **Variables** → *New repository variable* → nombre `AZURE_WEBAPP_NAME` → el nombre que elegiste en
-     el paso 2 (si no la creás, el workflow usa `techmundo-blazor`).
+     el paso 2. **Esta variable activa el deploy**: mientras no exista, el workflow solo compila (así el
+     badge queda en verde antes de configurar Azure).
 3. Borrá el archivo `.PublishSettings` de la PC (contiene credenciales).
 
 ## 5. Desplegar
