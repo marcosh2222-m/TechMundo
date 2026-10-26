@@ -1,6 +1,6 @@
 # Roadmap — TechMundo (Proyecto Integrador)
 
-Última actualización: 2026-10-22 · versión 1.0.1 (entrega)
+Última actualización: 2026-10-26 · versión 1.1.0 (entrega)
 
 Estado del proyecto frente a los requerimientos oficiales de las 4 unidades de
 "Desarrollo Web con Blazor". Cada ítem indica si está resuelto, pendiente, o es
@@ -163,7 +163,8 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] 5 issues creados en GitHub con etiquetas `bug` / `enhancement` / `documentation`
 - [ ] **Pendiente:** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
 - [ ] **Pendiente:** crear el App Service, cargar `AdminPin`, el secret y la variable, mergear a `main` (`docs/DESPLIEGUE.md`)
-- [x] Capturas en el README (`docs/capturas/`)
+- [x] Capturas en el README (`docs/capturas/`), actualizadas con fotos reales (v1.1.0)
+- [x] 37 productos con foto local + créditos (`docs/CREDITOS-IMAGENES.md`); 3 sin imagen para la demo
 - [x] Matriz de requisitos (`docs/REQUISITOS.md`)
 - [x] Dashboard con ventas, `launchSettings.json`, Bootstrap local (v1.0.0)
 - [x] Badge y links del README apuntan a `marcosh2222-m/TechMundo`

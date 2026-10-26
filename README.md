@@ -24,8 +24,8 @@ para gestionar el inventario y ver el historial de ventas.
 
 <img src="docs/capturas/07-celular-modo-oscuro.png" alt="Versión celular en modo oscuro" width="260" />
 
-> Las capturas se tomaron en un entorno sin acceso a los sitios de las imágenes de los productos, por eso
-> se ve el ícono por defecto. En la app real, los 29 productos que tienen una URL de imagen cargada muestran su foto.
+> 37 de los 40 productos tienen foto; 3 quedan sin imagen a propósito para mostrar el ícono por defecto
+> (ver [docs/CREDITOS-IMAGENES.md](docs/CREDITOS-IMAGENES.md)).
 
 ## Stack tecnológico
 
@@ -74,7 +74,7 @@ TechMundo/
 │   ├── Admin/                 Dashboard, Productos, Nuevo/Editar producto, Ventas
 │   └── Error.razor            Página de error de producción
 ├── Properties/   launchSettings.json (perfiles http/https en Development)
-├── wwwroot/      css/app.css (tema), js/interop.js (JS Interop), lib/ (Bootstrap e íconos locales)
+├── wwwroot/      css/app.css (tema), js/interop.js (JS Interop), lib/ (Bootstrap e íconos), img/productos/ (fotos)
 ├── docs/         Historias de usuario, Git Flow, despliegue, defensa, matriz de requisitos, capturas
 └── .github/      Workflow de CI/CD y plantillas de issues y Pull Requests
 ```
@@ -165,8 +165,9 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 - **PIN de admin**: no es autenticación real (ver arriba).
 - **Búsqueda con acentos**: `LIKE` de SQLite ignora mayúsculas solo en letras sin acento; "cámara" no
   encuentra "Cámara" (HU-17 del backlog).
-- **Imágenes externas**: las fotos se cargan desde los sitios de los fabricantes; si alguno falla, se muestra
-  un ícono por defecto. 11 productos no tienen foto y se pueden completar desde el panel.
+- **Imágenes**: las fotos están en `wwwroot/img/productos` (fabricantes y Wikimedia Commons, con sus créditos);
+  algunas de Wikimedia muestran un modelo cercano al del catálogo. Si una URL externa cargada desde el panel
+  falla, se muestra el ícono por defecto.
 - **SQLite en Azure**: adecuado para la demo (una instancia); para producción real convendría Azure SQL.
 
 ## Documentación del proyecto (Unidad 4)
@@ -177,6 +178,7 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 | [docs/GIT-FLOW.md](docs/GIT-FLOW.md) | Ramas, Conventional Commits, primer push, Pull Requests, issues y tablero Kanban |
 | [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Publicación en Azure App Service con GitHub Actions, paso a paso |
 | [docs/DEFENSA.md](docs/DEFENSA.md) | Guion de la presentación, checklist de entrega y preguntas probables |
+| [docs/CREDITOS-IMAGENES.md](docs/CREDITOS-IMAGENES.md) | Origen, autor y licencia de cada imagen de producto |
 | [docs/REQUISITOS.md](docs/REQUISITOS.md) | Dónde se cumple cada requisito y criterio de evaluación del Proyecto Integrador |
 | [CHANGELOG.md](CHANGELOG.md) | Historial de versiones (Keep a Changelog) |
 

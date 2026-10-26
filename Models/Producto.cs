@@ -22,7 +22,9 @@ public class Producto : IValidatableObject
     public string? Caracteristicas { get; set; }
 
     [MaxLength(500)]
-    [Url(ErrorMessage = "Ingresá una URL válida")]
+    // Acepta una URL externa (https://...) o una imagen del propio sitio (/img/productos/...).
+    // [Url] no sirve acá porque rechaza las rutas relativas.
+    [RegularExpression(@"^(https?://\S+|/\S+)$", ErrorMessage = "Ingresá una URL (https://...) o una ruta del sitio (/img/...)")]
     public string? ImagenUrl { get; set; }
 
     [Required(ErrorMessage = "El precio es obligatorio")]

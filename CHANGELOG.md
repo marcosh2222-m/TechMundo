@@ -2,6 +2,21 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.1.0] - 2026-10-26
+
+### Added
+- 37 de los 40 productos con foto, servidas desde `wwwroot/img/productos/` (WebP, máx. 800 px) en lugar de enlazar
+  sitios externos. Las fotos faltantes salen de Wikimedia Commons; créditos y licencias en `docs/CREDITOS-IMAGENES.md`.
+- Migración `ImagenesLocales` con los cambios del seed (la migración `Inicial` no se modifica).
+
+### Changed
+- Productos reemplazados para que coincidan con la foto disponible: Raspberry Pi 5 (antes ASUS ROG NUC),
+  Samsung T7 Shield (antes T7), Logitech G PRO TKL (antes G PRO X 60) y ASUS ROG Strix RTX 4070 Ti SUPER
+  (antes RTX 4070 SUPER FE). Las ventas de prueba que los incluían se recalcularon.
+- Dell UltraSharp, Motorola Edge 2025 y HyperX Cloud II quedan sin imagen a propósito, para la demo del ícono por defecto.
+- `ImagenUrl` acepta rutas del propio sitio (`/img/...`) además de URLs `https://` (antes `[Url]` las rechazaba).
+- Capturas del README actualizadas con las fotos reales.
+
 ## [1.0.1] - 2026-10-22
 
 ### Added
