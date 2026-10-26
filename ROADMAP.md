@@ -103,21 +103,7 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 
 **Fase C — Cerrar Unidad 3** ✅ Completa
 - [x] Sumar 2 categorías más al seed (llegar a 5) — ahora Computadoras, Celulares, Accesorios, Gaming, Redes
-- [ ] (Opcional, sigue pendiente) `ICategoriaService` para poder crear/editar categorías desde la UI
-
-> ⚠️ **Bugs críticos encontrados y corregidos en estas dos últimas vueltas**:
->
-> 1. `Producto.cs` tenía la propiedad `Destacado` declarada **dos veces**
->    (error de compilación CS0102). Era la causa del error "no se puede
->    iniciar el programa" — el build fallaba y el `.exe` nunca se generaba.
-> 2. `App.razor` nunca tuvo el `<link rel="stylesheet"
->    href="TechMundo.styles.css" />` que Blazor necesita para servir el CSS
->    Isolation. Los 14 archivos `.razor.css` del proyecto compilaban bien,
->    pero **ninguno se aplicaba en el navegador** — por eso la interfaz se
->    veía como texto plano sin grid, sin sidebar, sin tarjetas. Visual Studio
->    no avisa nada de esto: compila perfecto, el problema es puramente qué se
->    carga en el `<head>` del HTML.
-
+      
 **Fase E — Catálogo real y sistema de ventas** ✅ Completa (fuera de la consigna oficial)
 - [x] 40 productos reales con descripción, características e imágenes (campo `Caracteristicas`, v0.7.0)
 - [x] Imagen por defecto que sigue el modo oscuro cuando falta o falla la foto (v0.8.2)
@@ -142,14 +128,6 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] Verificado con 31 pruebas automáticas en Chromium (escritorio y 375 px)
 - [x] Migración inicial generada con dotnet-ef 8.0.10 y verificada con SQLite real en GitHub Actions
 
-**Ideas opcionales para después** (no están en la consigna)
-- [x] ~~Persistir el carrito~~ (hecho en v0.10.0, con `ProtectedSessionStorage`)
-- [ ] Anular una venta y devolver el stock
-- [x] ~~Mostrar ventas recientes en el Dashboard~~ (hecho en v1.0.0)
-- [ ] Productos más vendidos en el Dashboard
-- [ ] `ICategoriaService` para gestionar categorías desde la UI
-- [ ] Tests (xUnit) para `CarritoState` y `VentaService`
-
 **Fase D — Cerrar Unidad 4**
 - [x] XML docs completos en los servicios (v0.11.0)
 - [x] Historias de usuario, Definition of Done y Product Backlog (`docs/HISTORIAS-DE-USUARIO.md`)
@@ -159,11 +137,9 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] Precios en pesos argentinos
 - [x] Migración final generada y verificada con SQLite real (34 pruebas de navegador en verde)
 - [x] Repositorio público, historial por partes, ramas `main` / `develop` / `docs/*`
-- [ ] **Pendiente:** abrir, comentar y mergear un Pull Request (laboratorio de la Clase 19, `docs/GIT-FLOW.md`)
 - [x] 5 issues creados en GitHub con etiquetas `bug` / `enhancement` / `documentation`
 - [ ] **Pendiente:** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
 - [x] `Dockerfile` + jobs `docker` y `deploy-render` en el workflow (v1.2.0)
-- [ ] **Pendiente:** crear el Web Service en Render, cargar `AdminPin` y el secret `RENDER_DEPLOY_HOOK_URL` (`docs/DESPLIEGUE-RENDER.md`)
 - [x] Capturas en el README (`docs/capturas/`), actualizadas con fotos reales (v1.1.0)
 - [x] 37 productos con foto local + créditos (`docs/CREDITOS-IMAGENES.md`); 3 sin imagen para la demo
 - [x] Matriz de requisitos (`docs/REQUISITOS.md`)
