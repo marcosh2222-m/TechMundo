@@ -1,11 +1,11 @@
 # Guion de la defensa — TechMundo
 
 Unidad 4, Clase 24. **15 minutos**: 10 de presentación + 5 de preguntas. La app tiene que estar
-publicada en Azure (no se acepta localhost). Abrila 5 minutos antes: el plan F1 "duerme" la app.
+publicada (Render; no se acepta localhost). Abrila 2–5 minutos antes: el plan gratis "duerme" la app.
 
 ## Checklist de entrega (antes de la clase)
 
-- [ ] App desplegada en Azure con URL funcionando (`/health` responde `Healthy`) — **único pendiente**
+- [ ] App desplegada en Render con URL funcionando (`/health` responde `Healthy`) — `docs/DESPLIEGUE-RENDER.md`
 - [ ] Tablero Kanban en GitHub Projects con los 5 issues
 - [ ] Un Pull Request abierto, comentado y mergeado (`docs/GIT-FLOW.md`, paso 5)
 - [x] Repositorio GitHub **público** con historial de commits limpio (Conventional Commits)
@@ -19,8 +19,8 @@ publicada en Azure (no se acepta localhost). Abrila 5 minutos antes: el plan F1 
 
 ## Pestañas abiertas antes de empezar
 
-1. Catálogo en Azure (modo claro)
-2. `/admin` en Azure, ya con el PIN ingresado
+1. Catálogo en Render (modo claro)
+2. `/admin` en Render, ya con el PIN ingresado
 3. El repositorio en GitHub (pestaña *Code*)
 4. Visual Studio con el proyecto abierto
 5. Ventana del navegador en modo responsive (375 px) por si preguntan por mobile
@@ -57,7 +57,8 @@ protegido por PIN para gestionar el inventario y ver las ventas. Integra las cua
 ## 4. Repositorio y CI/CD — 2 min
 
 - Historial con Conventional Commits, ramas `main` / `develop` / `feature/*` y un Pull Request mergeado.
-- Pestaña **Actions**: job `build` en cada push/PR y `deploy` solo desde `main`.
+- Pestaña **Actions**: `build` y `docker` (prueba de la imagen) en cada push/PR; `deploy-render` solo desde `main`.
+- `Dockerfile`: compilación en dos etapas (SDK → runtime de ASP.NET Core).
 - Issues con etiquetas y el tablero Kanban (*Projects*).
 - Docs: `docs/HISTORIAS-DE-USUARIO.md`, XML docs en `IProductoService` / `IVentaService`.
 
@@ -97,8 +98,14 @@ evento; cada pestaña se suscribe y refresca con `InvokeAsync(StateHasChanged)`.
 **¿Por qué desactivaste el prerender?** Para no consultar la base dos veces por página y para poder leer el
 `sessionStorage` (carrito y sesión del admin) antes de mostrar la pantalla.
 
-**¿Cómo se aplican las migraciones en Azure?** `Database.Migrate()` al iniciar en `Program.cs`, después de crear
+**¿Cómo se aplican las migraciones en producción?** `Database.Migrate()` al iniciar en `Program.cs`, después de crear
 la carpeta de la base si no existe.
+
+**¿Por qué Render y no Azure?** Azure pide tarjeta (o validar un email institucional). Render es gratis y sin tarjeta;
+la app corre en un contenedor Docker. La guía de Azure quedó como alternativa y el workflow soporta ambos.
+
+**¿Qué pasa con los datos en Render?** En el plan gratis el disco del contenedor no es persistente: cuando el servicio
+se duerme, la base vuelve al seed. Para producción real se usaría una base administrada (PostgreSQL o Azure SQL).
 
 **¿Qué pasa con la hora de las ventas si el servidor está en otro país?** Azure corre en UTC; `Reloj.Ahora`
 convierte a la zona `America/Argentina/Buenos_Aires`, así las fechas y los filtros usan la hora local.

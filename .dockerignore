@@ -1,0 +1,15 @@
+bin/
+obj/
+publish/
+*.db
+*.db-shm
+*.db-wal
+.git/
+.github/
+.vs/
+.vscode/
+docs/
+tools/
+*.md
+Dockerfile
+.dockerignore

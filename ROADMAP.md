@@ -1,6 +1,6 @@
 # Roadmap — TechMundo (Proyecto Integrador)
 
-Última actualización: 2026-10-26 · versión 1.1.0 (entrega)
+Última actualización: 2026-10-26 · versión 1.2.0 (entrega)
 
 Estado del proyecto frente a los requerimientos oficiales de las 4 unidades de
 "Desarrollo Web con Blazor". Cada ítem indica si está resuelto, pendiente, o es
@@ -66,7 +66,7 @@ Leyenda: ✅ Resuelto · ⚠️ Parcial / a revisar · ❌ Pendiente
 | **XML docs en el servicio** (`///`, `<summary>`, `<param>`) | ✅ | Completos en `IProductoService`, `IVentaService` y `CarritoState`; el build genera `TechMundo.xml` |
 | Historias de usuario (Scrum/Kanban) | ✅ | `docs/HISTORIAS-DE-USUARIO.md`: 5 historias + DoD + backlog de 18; plantillas de issues y PR |
 | Repositorio GitHub con historial limpio | ✅ | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo): Conventional Commits, ramas `main` / `develop` / `docs/*`, issues |
-| Aplicación desplegada en URL pública | ❌ (pendiente) | Paso a paso en `docs/DESPLIEGUE.md` |
+| Aplicación desplegada en URL pública | ⚠️ (preparado) | Render con Docker: `docs/DESPLIEGUE-RENDER.md` (Azure como alternativa) |
 | Health checks | ✅ | `/health` |
 | Logging con `ILogger<T>` | ✅ | Ya en `ProductoService` |
 | User Secrets en desarrollo | ✅ | `UserSecretsId` en el `.csproj`; el PIN de admin se configura con `dotnet user-secrets` (dev) o variable de entorno (Azure) |
@@ -162,7 +162,8 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [ ] **Pendiente:** abrir, comentar y mergear un Pull Request (laboratorio de la Clase 19, `docs/GIT-FLOW.md`)
 - [x] 5 issues creados en GitHub con etiquetas `bug` / `enhancement` / `documentation`
 - [ ] **Pendiente:** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
-- [ ] **Pendiente:** crear el App Service, cargar `AdminPin`, el secret y la variable, mergear a `main` (`docs/DESPLIEGUE.md`)
+- [x] `Dockerfile` + jobs `docker` y `deploy-render` en el workflow (v1.2.0)
+- [ ] **Pendiente:** crear el Web Service en Render, cargar `AdminPin` y el secret `RENDER_DEPLOY_HOOK_URL` (`docs/DESPLIEGUE-RENDER.md`)
 - [x] Capturas en el README (`docs/capturas/`), actualizadas con fotos reales (v1.1.0)
 - [x] 37 productos con foto local + créditos (`docs/CREDITOS-IMAGENES.md`); 3 sin imagen para la demo
 - [x] Matriz de requisitos (`docs/REQUISITOS.md`)
