@@ -8,6 +8,8 @@ tienda de tecnología (computadoras, celulares, accesorios, gaming y redes) con 
 un **catálogo público con carrito de compras** para clientes y un **panel de administración**
 para gestionar el inventario y ver el historial de ventas.
 
+https://techmundo.onrender.com
+
 ## Capturas
 
 | Catálogo | Detalle del producto |
