@@ -27,7 +27,7 @@
         Solo stock bajo
     </label>
 
-    <input type="text" placeholder="Buscar por nombre, marca o descripción..." class="form-control"
+    <input type="text" placeholder="Buscar por nombre, marca o descripción..." class="form-control" maxlength="80"
            @bind="busqueda" @bind:event="oninput" @bind:after="Recargar" />
 </div>
 

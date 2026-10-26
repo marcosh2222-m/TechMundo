@@ -29,7 +29,7 @@ else if (!AccessState.Autenticado)
 
                 <form @onsubmit="Ingresar" @onsubmit:preventDefault="true">
                     <input type="password" inputmode="numeric" @bind="pin" @bind:event="oninput"
-                           placeholder="PIN" class="gate-input" aria-label="PIN de administrador" autofocus />
+                           placeholder="PIN" class="gate-input" aria-label="PIN de administrador" maxlength="20" autocomplete="off" autofocus />
                     @if (mensajeError is not null)
                     {
                         <p class="gate-error" role="alert">@mensajeError</p>
@@ -145,6 +145,12 @@ else
 
     private async Task Ingresar()
     {
+        if (string.IsNullOrWhiteSpace(pin))
+        {
+            mensajeError = "Ingresá el PIN.";
+            return;
+        }
+
         var resultado = AccessState.Ingresar(pin);
         pin = string.Empty;
 

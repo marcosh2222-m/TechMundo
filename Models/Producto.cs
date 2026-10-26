@@ -8,35 +8,38 @@ public class Producto : IValidatableObject
     public int Id { get; set; }
 
     [Required(ErrorMessage = "El nombre es obligatorio")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage = "Debe tener entre 2 y 100 caracteres")]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
     public string Nombre { get; set; } = string.Empty;
 
-    [MaxLength(50)]
+    [Obligatorio(ErrorMessage = "La marca es obligatoria")]
+    [StringLength(50, MinimumLength = 2, ErrorMessage = "La marca debe tener entre 2 y 50 caracteres")]
+    [RegularExpression(Validaciones.PatronMarca, ErrorMessage = "La marca solo puede tener letras, números, espacios y . - & +")]
     public string? Marca { get; set; }
 
-    [MaxLength(500)]
+    [Obligatorio(ErrorMessage = "La descripción es obligatoria")]
+    [StringLength(500, MinimumLength = 10, ErrorMessage = "La descripción debe tener entre 10 y 500 caracteres")]
     public string? Descripcion { get; set; }
 
     /// <summary>Características técnicas, una por línea (se muestran como lista en el detalle).</summary>
-    [MaxLength(1500)]
+    [StringLength(1500, ErrorMessage = "Las características no pueden superar los 1500 caracteres")]
     public string? Caracteristicas { get; set; }
 
-    [MaxLength(500)]
     // Acepta una URL externa (https://...) o una imagen del propio sitio (/img/productos/...).
     // [Url] no sirve acá porque rechaza las rutas relativas.
-    [RegularExpression(@"^(https?://\S+|/\S+)$", ErrorMessage = "Ingresá una URL (https://...) o una ruta del sitio (/img/...)")]
+    [StringLength(500, ErrorMessage = "La URL no puede superar los 500 caracteres")]
+    [RegularExpression(Validaciones.PatronImagen, ErrorMessage = "Ingresá una URL (https://...) o una ruta del sitio (/img/...)")]
     public string? ImagenUrl { get; set; }
 
     [Required(ErrorMessage = "El precio es obligatorio")]
-    [Range(0.01, 100_000_000, ErrorMessage = "El precio debe ser mayor a $0 y menor a $100.000.000")]
+    [Range(1, 100_000_000, ErrorMessage = "El precio debe estar entre $1 y $100.000.000")]
     public decimal Precio { get; set; }
 
-    [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
+    [Required(ErrorMessage = "El stock es obligatorio")]
+    [Range(0, 100_000, ErrorMessage = "El stock debe estar entre 0 y 100.000 unidades")]
     public int Stock { get; set; }
 
-    [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "El stock mínimo no puede ser negativo")]
+    [Required(ErrorMessage = "El stock mínimo es obligatorio")]
+    [Range(0, 10_000, ErrorMessage = "El stock mínimo debe estar entre 0 y 10.000 unidades")]
     public int StockMinimo { get; set; } = 5;
 
     public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
@@ -74,6 +77,20 @@ public class Producto : IValidatableObject
             yield return new ValidationResult(
                 "No podés marcar como disponible un producto sin stock. Cargá stock o desmarcá 'Disponible'.",
                 new[] { nameof(Disponible) });
+        }
+
+        // Los precios en pesos admiten como máximo 2 decimales (centavos).
+        if (decimal.Round(Precio, 2) != Precio)
+            yield return new ValidationResult("El precio puede tener como máximo 2 decimales.", new[] { nameof(Precio) });
+
+        // Características: una por línea, como máximo 15 líneas de 150 caracteres.
+        if (!string.IsNullOrWhiteSpace(Caracteristicas))
+        {
+            var lineas = Caracteristicas.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (lineas.Length > 15)
+                yield return new ValidationResult("Cargá como máximo 15 características (una por línea).", new[] { nameof(Caracteristicas) });
+            if (lineas.Any(l => l.Length > 150))
+                yield return new ValidationResult("Cada característica puede tener como máximo 150 caracteres.", new[] { nameof(Caracteristicas) });
         }
     }
 }

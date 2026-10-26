@@ -2,6 +2,22 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.2.1] - 2026-10-26
+
+### Fixed
+- Modo oscuro: los números del dashboard quedaban oscuros sobre fondo oscuro (la clase `card` de `EstadisticaCard`
+  chocaba con `.card` de Bootstrap). Se agregaron las variables de Bootstrap y `color-scheme: dark`.
+- El email del checkout aceptaba cualquier texto con "@" (por ejemplo "asd@asd"): `[EmailAddress]` de .NET es muy permisivo.
+
+### Added
+- Validaciones de campos en todo el programa (`Models/Validaciones.cs`):
+  - Checkout: nombre y apellido (solo letras) y email con dominio válido; se validan también en `VentaService`.
+  - Productos: marca y descripción obligatorias, precio entre $1 y $100.000.000 con hasta 2 decimales, stock y stock
+    mínimo con rangos, hasta 15 características de 150 caracteres, nombre único y mensajes en español.
+  - Ventas: el rango de fechas no puede estar invertido ni empezar en el futuro.
+  - Carrito: máximo 99 unidades por producto; límites de longitud en búsquedas y en el PIN.
+- Los formularios usan `novalidate` para que siempre se vean los mensajes propios en español.
+
 ## [1.2.0] - 2026-10-26
 
 ### Added

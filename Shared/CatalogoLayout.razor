@@ -12,7 +12,7 @@
         <a href="/" class="tienda-logo">TechMundo</a>
 
         <form class="tienda-header-buscador" role="search" @onsubmit="Buscar" @onsubmit:preventDefault="true">
-            <input type="search" placeholder="Buscar productos..." class="buscador-input" aria-label="Buscar productos"
+            <input type="search" placeholder="Buscar productos..." class="buscador-input" aria-label="Buscar productos" maxlength="80"
                    @bind="busqueda" @bind:event="oninput" />
             <button type="submit" class="buscador-boton" aria-label="Buscar"><i class="bi bi-search"></i></button>
         </form>

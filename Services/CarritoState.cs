@@ -65,6 +65,12 @@ public class CarritoState
         var linea = _lineas.FirstOrDefault(l => l.ProductoId == p.Id);
         var enCarrito = linea?.Cantidad ?? 0;
 
+        if (cantidad < 1)
+            return new(false, "La cantidad debe ser al menos 1.");
+
+        if (enCarrito + cantidad > Validaciones.MaxUnidadesPorProducto)
+            return new(false, $"Podés comprar hasta {Validaciones.MaxUnidadesPorProducto} unidades de un mismo producto.");
+
         if (enCarrito + cantidad > p.Stock)
         {
             return new(false, enCarrito == 0
@@ -100,6 +106,9 @@ public class CarritoState
         if (linea is null) return new(false);
 
         if (nuevaCantidad <= 0) { Quitar(productoId); return new(true); }
+
+        if (nuevaCantidad > Validaciones.MaxUnidadesPorProducto)
+            return new(false, $"Podés comprar hasta {Validaciones.MaxUnidadesPorProducto} unidades de un mismo producto.");
 
         if (nuevaCantidad > linea.StockDisponible)
             return new(false, $"Solo hay {linea.StockDisponible} unidades de \"{linea.Nombre}\" en stock.");

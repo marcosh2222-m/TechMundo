@@ -22,6 +22,19 @@ public class VentaService : IVentaService
         if (lineas.Count == 0)
             throw new InvalidOperationException("El carrito está vacío.");
 
+        // Validación del lado del servidor: aunque el formulario ya valida, el servicio no confía
+        // en que los datos lleguen siempre desde la interfaz.
+        clienteNombre = Validaciones.NormalizarNombre(clienteNombre);
+        clienteEmail = Validaciones.NormalizarEmail(clienteEmail);
+        if (!Validaciones.EsNombrePersonaValido(clienteNombre))
+            throw new InvalidOperationException("El nombre del cliente no es válido: ingresá nombre y apellido.");
+        if (!Validaciones.EsEmailValido(clienteEmail))
+            throw new InvalidOperationException("El email del cliente no es válido.");
+        if (lineas.Any(l => l.Cantidad < 1 || l.Cantidad > Validaciones.MaxUnidadesPorProducto))
+            throw new InvalidOperationException($"Cada producto debe tener entre 1 y {Validaciones.MaxUnidadesPorProducto} unidades.");
+        if (lineas.GroupBy(l => l.ProductoId).Any(g => g.Count() > 1))
+            throw new InvalidOperationException("El carrito tiene productos repetidos.");
+
         await using var ctx = await _factory.CreateDbContextAsync();
         await using var tx = await ctx.Database.BeginTransactionAsync();
 
@@ -40,7 +53,7 @@ public class VentaService : IVentaService
         if (problemas.Count > 0)
             throw new StockInsuficienteException(string.Join(" ", problemas));
 
-        var venta = new Venta { Fecha = Reloj.Ahora, ClienteNombre = clienteNombre.Trim(), ClienteEmail = clienteEmail.Trim() };
+        var venta = new Venta { Fecha = Reloj.Ahora, ClienteNombre = clienteNombre, ClienteEmail = clienteEmail };
 
         foreach (var l in lineas)
         {
