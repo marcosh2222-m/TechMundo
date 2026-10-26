@@ -9,7 +9,7 @@ publicada (Render; no se acepta localhost). Abrila 2–5 minutos antes: el plan 
 
 - [x] App desplegada en Render: https://techmundo.onrender.com (`/health` responde `Healthy`)
 - [ ] Tablero Kanban en GitHub Projects con los 5 issues
-- [ ] Un Pull Request abierto, comentado y mergeado (`docs/GIT-FLOW.md`, paso 5)
+- [x] Pull Requests abiertos, comentados y mergeados (#6 `branch1` → `develop`, #7 `develop` → `main`)
 - [x] Repositorio GitHub **público** con historial de commits limpio (Conventional Commits)
 - [x] README completo: descripción, stack, instalación, capturas (`docs/capturas/`)
 - [x] CHANGELOG con al menos 3 versiones (hay más de 10)

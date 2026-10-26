@@ -43,7 +43,7 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 
 | Requisito | Dónde | Estado |
 |---|---|---|
-| Repositorio GitHub con historial limpio (Conventional Commits) | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo) | Listo: commits por tema, ramas `main` / `develop`, issues (falta mergear un Pull Request) |
+| Repositorio GitHub con historial limpio (Conventional Commits) | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo) | Listo: commits por tema, ramas `main` / `develop`, issues y Pull Requests revisados y mergeados (#6, #7) |
 | CI/CD con GitHub Actions | `.github/workflows/deploy.yml` | Listo: `build` + prueba de la imagen Docker en push/PR; deploy a Render desde `main` |
 | README profesional | `README.md` | Listo: descripción, stack, arquitectura, capturas, instalación, configuración |
 | App desplegada en URL pública | https://techmundo.onrender.com | Render (Docker) con deploy desde GitHub Actions |
@@ -60,6 +60,6 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 | Interfaz visual: HTML5, CSS, Bootstrap responsive | 15 | Layouts semánticos, 17 `.razor.css`, mobile-first, modo oscuro |
 | JS Interop implementado correctamente | 10 | `interop.js` como módulo ES6, `IJSObjectReference`, `DisposeAsync`, manejo de `JSException` |
 | Persistencia con EF Core: CRUD, paginación, búsqueda | 20 | `ProductoService`, `VentaService` (transacción), migraciones, seed |
-| Git: historial limpio, ramas, CI/CD | 10 | Repositorio en GitHub, ramas, issues, workflow en verde (+ un Pull Request a mergear) |
+| Git: historial limpio, ramas, CI/CD | 10 | Repositorio en GitHub, ramas, issues, Pull Requests #6 y #7, workflow en verde |
 | Aplicación desplegada y accesible | 5 | https://techmundo.onrender.com |
 | README y documentación | 5 | `README.md`, `docs/`, `CHANGELOG.md`, XML docs |
