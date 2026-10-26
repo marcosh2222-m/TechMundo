@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.2.0] - 2026-10-26
+
+### Added
+- `Dockerfile` en dos etapas (SDK → runtime ASP.NET Core 8) y `.dockerignore`, para publicar en Render.
+- Workflow CI/CD: job `docker` que construye la imagen, la levanta y verifica `/health`; job `deploy-render` que
+  dispara el Deploy Hook de Render (secret `RENDER_DEPLOY_HOOK_URL`) solo si el build y la imagen pasaron.
+- `docs/DESPLIEGUE-RENDER.md`: guía paso a paso (gratis, sin tarjeta). Azure queda como alternativa.
+
 ## [1.1.0] - 2026-10-26
 
 ### Added

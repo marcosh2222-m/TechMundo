@@ -32,7 +32,7 @@ para gestionar el inventario y ver el historial de ventas.
 - **Frontend:** Blazor Server (.NET 8, modo interactivo sin prerender), CSS Isolation, JS Interop (módulo ES6), Bootstrap 5 + Bootstrap Icons
 - **Backend/Datos:** Entity Framework Core 8, SQLite, `DbContextFactory`
 - **Validaciones:** Data Annotations + validación cruzada (`IValidatableObject`) + concurrencia optimista (`[ConcurrencyCheck]`)
-- **CI/CD:** GitHub Actions → Azure App Service
+- **CI/CD:** GitHub Actions → Docker → Render (alternativa: Azure App Service)
 
 ## Arquitectura
 
@@ -157,8 +157,9 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 | Variable | Descripción | Ejemplo |
 |---|---|---|
 | `ASPNETCORE_ENVIRONMENT` | Ambiente de ejecución | `Development` / `Production` |
-| `ConnectionStrings__Default` | Cadena de conexión SQLite (la carpeta se crea sola si no existe) | `Data Source=/home/data/techmundo.db` |
-| `AdminPin` | PIN de acceso al panel de admin | *(definir en Azure / User Secrets)* |
+| `ConnectionStrings__Default` | Cadena de conexión SQLite (la carpeta se crea sola si no existe) | `Data Source=/app/data/techmundo.db` (Docker) |
+| `AdminPin` | PIN de acceso al panel de admin | *(definir en Render / Azure / User Secrets)* |
+| `ASPNETCORE_HTTP_PORTS` | Puerto HTTP dentro del contenedor | `10000` (lo fija el `Dockerfile`) |
 
 ## Limitaciones conocidas
 
@@ -168,7 +169,8 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 - **Imágenes**: las fotos están en `wwwroot/img/productos` (fabricantes y Wikimedia Commons, con sus créditos);
   algunas de Wikimedia muestran un modelo cercano al del catálogo. Si una URL externa cargada desde el panel
   falla, se muestra el ícono por defecto.
-- **SQLite en Azure**: adecuado para la demo (una instancia); para producción real convendría Azure SQL.
+- **Base de datos en Render**: en el plan gratis la base SQLite vuelve a los datos de ejemplo cada vez que el
+  servicio se duerme o se publica de nuevo; para producción real haría falta una base administrada (PostgreSQL / Azure SQL).
 
 ## Documentación del proyecto (Unidad 4)
 
@@ -176,7 +178,8 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 |---|---|
 | [docs/HISTORIAS-DE-USUARIO.md](docs/HISTORIAS-DE-USUARIO.md) | Historias de usuario, criterios de aceptación, Definition of Done y Product Backlog |
 | [docs/GIT-FLOW.md](docs/GIT-FLOW.md) | Ramas, Conventional Commits, primer push, Pull Requests, issues y tablero Kanban |
-| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Publicación en Azure App Service con GitHub Actions, paso a paso |
+| [docs/DESPLIEGUE-RENDER.md](docs/DESPLIEGUE-RENDER.md) | Publicación en Render (gratis, sin tarjeta) con Docker y GitHub Actions |
+| [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Alternativa: publicación en Azure App Service |
 | [docs/DEFENSA.md](docs/DEFENSA.md) | Guion de la presentación, checklist de entrega y preguntas probables |
 | [docs/CREDITOS-IMAGENES.md](docs/CREDITOS-IMAGENES.md) | Origen, autor y licencia de cada imagen de producto |
 | [docs/REQUISITOS.md](docs/REQUISITOS.md) | Dónde se cumple cada requisito y criterio de evaluación del Proyecto Integrador |
@@ -187,9 +190,13 @@ build genera `TechMundo.xml`, que Visual Studio usa para mostrar la ayuda en Int
 
 ## CI/CD
 
-El workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) compila y publica en cada push o
-Pull Request a `main` / `develop`, y despliega en Azure App Service solo desde `main`.
-Requiere el secret `AZURE_WEBAPP_PUBLISH_PROFILE` y, opcionalmente, la variable `AZURE_WEBAPP_NAME`.
+El workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) corre en cada push o Pull Request a
+`main` / `develop`:
+
+1. **build**: restaura, compila y publica la app (.NET 8, Release).
+2. **docker**: construye la imagen del [`Dockerfile`](Dockerfile), la levanta y verifica que `/health` responda `Healthy`.
+3. **deploy-render** (solo `main`): llama al Deploy Hook de Render (secret `RENDER_DEPLOY_HOOK_URL`). Guía: [docs/DESPLIEGUE-RENDER.md](docs/DESPLIEGUE-RENDER.md).
+4. **deploy** (solo `main`, opcional): Azure App Service, si existe la variable `AZURE_WEBAPP_NAME`. Guía: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
 
 ## Health check
 

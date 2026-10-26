@@ -1,7 +1,8 @@
 name: CI/CD
 
 # CI: compila en cada push y Pull Request a main o develop.
-# CD: solo un push a main (por ejemplo, al mergear develop → main) despliega en Azure.
+# CD: solo un push a main (por ejemplo, al mergear develop → main) despliega en Render (o en Azure,
+# si está configurado). Antes se prueba la imagen Docker.
 on:
   push:
     branches: [ main, develop ]
@@ -41,6 +42,41 @@ jobs:
           name: techmundo
           path: ./publish
 
+  # Prueba la imagen Docker que usa Render: la construye, la levanta y verifica /health.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir la imagen
+        run: docker build -t techmundo .
+
+      - name: Levantar el contenedor y verificar /health
+        run: |
+          docker run -d --name techmundo -p 10000:10000 -e AdminPin=ci-test techmundo
+          for i in $(seq 1 30); do curl -sf http://localhost:10000/health && break; sleep 2; done
+          echo
+          test "$(curl -s http://localhost:10000/health)" = "Healthy" || { docker logs techmundo; exit 1; }
+
+  # Deploy a Render: GitHub Actions llama al "Deploy Hook" del servicio solo si el build y la
+  # imagen Docker pasaron. Sin el secret RENDER_DEPLOY_HOOK_URL, el paso se saltea.
+  deploy-render:
+    needs: [ build, docker ]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy en Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::notice::Render todavía no está configurado (falta el secret RENDER_DEPLOY_HOOK_URL)."
+            exit 0
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL" > /dev/null
+          echo "::notice::Deploy en Render solicitado."
+
+  # Deploy alternativo a Azure App Service (se activa con la variable AZURE_WEBAPP_NAME).
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.AZURE_WEBAPP_NAME != ''
