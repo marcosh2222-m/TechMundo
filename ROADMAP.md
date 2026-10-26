@@ -138,7 +138,8 @@ Ya son 13 componentes reutilizables (`Modal`, `ImagenProducto`, `ProductoVidrier
 - [x] Migración final generada y verificada con SQLite real (34 pruebas de navegador en verde)
 - [x] Repositorio público, historial por partes, ramas `main` / `develop` / `docs/*`
 - [x] 5 issues creados en GitHub con etiquetas `bug` / `enhancement` / `documentation`
-- [ ] **Pendiente:** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
+- [x] Pull Requests #6 (`branch1` → `develop`) y #7 (`develop` → `main`) con revisión
+- [ ] **Pendiente (verificar):** tablero Kanban en GitHub Projects con los issues (`docs/GIT-FLOW.md`)
 - [x] `Dockerfile` + jobs `docker` y `deploy-render` en el workflow (v1.2.0)
 - [x] Capturas en el README (`docs/capturas/`), actualizadas con fotos reales (v1.1.0)
 - [x] 37 productos con foto local + créditos (`docs/CREDITOS-IMAGENES.md`); 3 sin imagen para la demo
