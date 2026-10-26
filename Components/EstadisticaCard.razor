@@ -3,7 +3,7 @@
    historial de ventas y en el dashboard, evitando duplicar el
    mismo markup en dos lugares (criterio de "código limpio, sin duplicación"). *@
 
-<div class="estadistica @(Compacta ? "compacta" : "card") @(Aviso ? "aviso" : "")">
+<div class="estadistica @(Compacta ? "compacta" : "grande") @(Aviso ? "aviso" : "")">
     <span class="estadistica-valor">@Valor</span>
     <span class="estadistica-label">@Etiqueta</span>
 </div>

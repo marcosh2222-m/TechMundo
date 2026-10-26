@@ -78,16 +78,18 @@
                     }
                 </ul>
 
-                <EditForm Model="datos" OnValidSubmit="Confirmar" id="form-compra">
+                <EditForm Model="datos" OnValidSubmit="Confirmar" id="form-compra" novalidate>
                     <DataAnnotationsValidator />
                     <div class="campo-form">
                         <label for="cli-nombre">Nombre y apellido</label>
-                        <InputText id="cli-nombre" @bind-Value="datos.Nombre" class="form-control" />
+                        <InputText id="cli-nombre" @bind-Value="datos.Nombre" class="form-control" maxlength="80"
+                                   autocomplete="name" placeholder="Ana Pérez" />
                         <ValidationMessage For="() => datos.Nombre" />
                     </div>
                     <div class="campo-form">
                         <label for="cli-email">Email</label>
-                        <InputText id="cli-email" @bind-Value="datos.Email" class="form-control" placeholder="nombre@correo.com" />
+                        <InputText id="cli-email" type="email" @bind-Value="datos.Email" class="form-control" maxlength="120"
+                                   autocomplete="email" inputmode="email" placeholder="nombre@correo.com" />
                         <ValidationMessage For="() => datos.Email" />
                     </div>
                 </EditForm>
@@ -123,15 +125,19 @@
 @code {
     private enum Paso { Carrito, Datos, Exito }
 
+    // Mismas reglas que valida VentaService en el servidor (Models/Validaciones.cs).
     private class DatosCliente
     {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ingresá tu nombre")]
-        [System.ComponentModel.DataAnnotations.StringLength(80, MinimumLength = 2, ErrorMessage = "Debe tener entre 2 y 80 caracteres")]
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ingresá tu nombre y apellido")]
+        [System.ComponentModel.DataAnnotations.StringLength(80, MinimumLength = 3, ErrorMessage = "Debe tener entre 3 y 80 caracteres")]
+        [System.ComponentModel.DataAnnotations.RegularExpression(Validaciones.PatronNombrePersona,
+            ErrorMessage = "Ingresá nombre y apellido (solo letras, separados por un espacio)")]
         public string Nombre { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ingresá tu email")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Ingresá un email válido")]
-        [System.ComponentModel.DataAnnotations.StringLength(120)]
+        [System.ComponentModel.DataAnnotations.StringLength(120, ErrorMessage = "El email no puede superar los 120 caracteres")]
+        [System.ComponentModel.DataAnnotations.RegularExpression(Validaciones.PatronEmail,
+            ErrorMessage = "Ingresá un email válido, por ejemplo nombre@correo.com")]
         public string Email { get; set; } = string.Empty;
     }
 
@@ -169,7 +175,8 @@
         error = null;
         try
         {
-            ventaConfirmada = await VentaService.RegistrarVenta(datos.Nombre, datos.Email, Carrito.Lineas.ToList());
+            ventaConfirmada = await VentaService.RegistrarVenta(
+                Validaciones.NormalizarNombre(datos.Nombre), Validaciones.NormalizarEmail(datos.Email), Carrito.Lineas.ToList());
             Carrito.Vaciar();
             paso = Paso.Exito;
         }

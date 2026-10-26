@@ -1,7 +1,9 @@
-@* ProductoForm — Unidad 1, Clases 6-7: EditForm + DataAnnotationsValidator *@
+@* ProductoForm — Unidad 1, Clases 6-7: EditForm + DataAnnotationsValidator.
+   novalidate: desactiva la validación nativa del navegador (que bloquea el envío con mensajes en
+   inglés por los atributos min/max) para que siempre se muestren los mensajes propios en español. *@
 @inject IProductoService ProductoService
 
-<EditForm Model="Modelo" OnValidSubmit="Guardar">
+<EditForm Model="Modelo" OnValidSubmit="Guardar" novalidate>
     <DataAnnotationsValidator />
     <ValidationSummary class="validation-errors" />
 
@@ -12,14 +14,15 @@
 
     <div class="campo-form">
         <label for="nombre">Nombre</label>
-        <InputText id="nombre" @bind-Value="Modelo.Nombre" class="form-control" />
+        <InputText id="nombre" @bind-Value="Modelo.Nombre" class="form-control" maxlength="100" />
         <ValidationMessage For="() => Modelo.Nombre" />
     </div>
 
     <div class="campo-form-row">
         <div class="campo-form">
             <label for="marca">Marca</label>
-            <InputText id="marca" @bind-Value="Modelo.Marca" class="form-control" />
+            <InputText id="marca" @bind-Value="Modelo.Marca" class="form-control" maxlength="50" />
+            <ValidationMessage For="() => Modelo.Marca" />
         </div>
 
         <div class="campo-form">
@@ -37,37 +40,42 @@
 
     <div class="campo-form">
         <label for="descripcion">Descripción</label>
-        <InputTextArea id="descripcion" @bind-Value="Modelo.Descripcion" class="form-control" rows="3" />
+        <InputTextArea id="descripcion" @bind-Value="Modelo.Descripcion" class="form-control" rows="3" maxlength="500" />
+        <small class="ayuda">@(Modelo.Descripcion?.Length ?? 0)/500 caracteres</small>
+        <ValidationMessage For="() => Modelo.Descripcion" />
     </div>
 
     <div class="campo-form">
         <label for="caracteristicas">Características (una por línea)</label>
-        <InputTextArea id="caracteristicas" @bind-Value="Modelo.Caracteristicas" class="form-control" rows="5" placeholder="Procesador: ...&#10;Memoria RAM: ..." />
+        <InputTextArea id="caracteristicas" @bind-Value="Modelo.Caracteristicas" class="form-control" rows="5" maxlength="1500" placeholder="Procesador: ...&#10;Memoria RAM: ..." />
         <ValidationMessage For="() => Modelo.Caracteristicas" />
     </div>
 
     <div class="campo-form">
         <label for="imagen">URL de imagen (opcional)</label>
-        <InputText id="imagen" @bind-Value="Modelo.ImagenUrl" class="form-control" placeholder="https://... o /img/productos/archivo.webp" />
+        <InputText id="imagen" @bind-Value="Modelo.ImagenUrl" class="form-control" maxlength="500" placeholder="https://... o /img/productos/archivo.webp" />
         <ValidationMessage For="() => Modelo.ImagenUrl" />
     </div>
 
     <div class="campo-form-row">
         <div class="campo-form">
-            <label for="precio">Precio</label>
-            <InputNumber id="precio" @bind-Value="Modelo.Precio" class="form-control" />
+            <label for="precio">Precio ($)</label>
+            <InputNumber id="precio" @bind-Value="Modelo.Precio" class="form-control" min="1" max="100000000" step="0.01"
+                         ParsingErrorMessage="El precio debe ser un número (ej. 1463000 o 1999,50)" />
             <ValidationMessage For="() => Modelo.Precio" />
         </div>
 
         <div class="campo-form">
             <label for="stock">Stock actual</label>
-            <InputNumber id="stock" @bind-Value="Modelo.Stock" class="form-control" />
+            <InputNumber id="stock" @bind-Value="Modelo.Stock" class="form-control" min="0" max="100000" step="1"
+                         ParsingErrorMessage="El stock debe ser un número entero" />
             <ValidationMessage For="() => Modelo.Stock" />
         </div>
 
         <div class="campo-form">
             <label for="stockMinimo">Stock mínimo</label>
-            <InputNumber id="stockMinimo" @bind-Value="Modelo.StockMinimo" class="form-control" />
+            <InputNumber id="stockMinimo" @bind-Value="Modelo.StockMinimo" class="form-control" min="0" max="10000" step="1"
+                         ParsingErrorMessage="El stock mínimo debe ser un número entero" />
             <ValidationMessage For="() => Modelo.StockMinimo" />
         </div>
     </div>

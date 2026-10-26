@@ -24,7 +24,7 @@
         <input type="date" class="control" @bind="hasta" @bind:format="yyyy-MM-dd" @bind:after="Recargar" min="@desde?.ToString("yyyy-MM-dd")" />
     </label>
     <label class="crece">Buscar
-        <input type="text" class="control" placeholder="Cliente, email o N.º de venta..." @bind="busqueda" @bind:event="oninput" @bind:after="Recargar" />
+        <input type="text" class="control" placeholder="Cliente, email o N.º de venta..." maxlength="80" @bind="busqueda" @bind:event="oninput" @bind:after="Recargar" />
     </label>
     <label>Ordenar por
         <select class="control" @bind="orden" @bind:after="Recargar">
@@ -39,6 +39,11 @@
         <button class="btn-secundario btn-sm" @onclick="Limpiar">Limpiar filtros</button>
     }
 </div>
+
+@if (mensajeError is not null)
+{
+    <AlertError Mensaje="@mensajeError" OnCerrar="() => mensajeError = null" />
+}
 
 @if (isLoading)
 {
@@ -76,11 +81,6 @@ else
     <Paginacion PaginaActual="pagina" TotalPaginas="totalPaginas" OnCambio="CambiarPagina" />
 }
 
-@if (mensajeError is not null)
-{
-    <AlertError Mensaje="@mensajeError" OnCerrar="() => mensajeError = null" />
-}
-
 <VentaDetalleModal Venta="seleccionada" OnCerrar="() => seleccionada = null" />
 
 @code {
@@ -112,6 +112,27 @@ else
 
     private async Task Cargar()
     {
+        // Validación de los filtros: un rango de fechas invertido no devuelve nada y confunde.
+        if (desde is not null && hasta is not null && desde > hasta)
+        {
+            mensajeError = "La fecha \"Desde\" no puede ser posterior a \"Hasta\".";
+            ventas = new();
+            resumen = new(0, 0, 0);
+            totalPaginas = 1;
+            isLoading = false;
+            return;
+        }
+        if (desde > Reloj.Hoy)
+        {
+            mensajeError = "La fecha \"Desde\" no puede ser futura.";
+            ventas = new();
+            resumen = new(0, 0, 0);
+            totalPaginas = 1;
+            isLoading = false;
+            return;
+        }
+        mensajeError = null;
+
         try
         {
             var resultado = await VentaService.ObtenerPaginado(pagina, TamanioPagina, Filtro);

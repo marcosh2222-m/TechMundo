@@ -105,11 +105,33 @@ public class ProductoService : IProductoService
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    /// <summary>Evita dos productos con el mismo nombre (sin distinguir mayúsculas ni espacios de más).</summary>
+    private static async Task ValidarNombreUnico(TechMundoDbContext ctx, Producto producto)
+    {
+        var nombre = producto.Nombre.Trim().ToLower();
+        if (await ctx.Productos.AnyAsync(p => p.Id != producto.Id && p.Nombre.ToLower() == nombre))
+            throw new InvalidOperationException($"Ya existe un producto llamado \"{producto.Nombre.Trim()}\".");
+    }
+
+    /// <summary>Limpia espacios sobrantes de los textos antes de guardar.</summary>
+    private static void Normalizar(Producto p)
+    {
+        p.Nombre = p.Nombre.Trim();
+        p.Marca = string.IsNullOrWhiteSpace(p.Marca) ? null : p.Marca.Trim();
+        p.Descripcion = string.IsNullOrWhiteSpace(p.Descripcion) ? null : p.Descripcion.Trim();
+        p.ImagenUrl = string.IsNullOrWhiteSpace(p.ImagenUrl) ? null : p.ImagenUrl.Trim();
+        p.Caracteristicas = string.IsNullOrWhiteSpace(p.Caracteristicas)
+            ? null
+            : string.Join('\n', p.Caracteristicas.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
+
     public async Task<Producto> Crear(Producto producto)
     {
         try
         {
             await using var ctx = await _factory.CreateDbContextAsync();
+            Normalizar(producto);
+            await ValidarNombreUnico(ctx, producto);
             producto.CreadoEn = DateTime.UtcNow;
             ctx.Productos.Add(producto);
             await ctx.SaveChangesAsync();
@@ -134,6 +156,8 @@ public class ProductoService : IProductoService
             await using var ctx = await _factory.CreateDbContextAsync();
             var actual = await ctx.Productos.FirstOrDefaultAsync(p => p.Id == producto.Id)
                          ?? throw new InvalidOperationException("El producto ya no existe en el catálogo.");
+            Normalizar(producto);
+            await ValidarNombreUnico(ctx, producto);
 
             // Concurrencia optimista: si la versión que tenía el formulario no es la actual,
             // alguien más modificó el producto y no se pisan sus cambios.
