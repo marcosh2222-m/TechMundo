@@ -8,10 +8,6 @@ tienda de tecnología (computadoras, celulares, accesorios, gaming y redes) con 
 un **catálogo público con carrito de compras** para clientes y un **panel de administración**
 para gestionar el inventario y ver el historial de ventas.
 
-> Los precios del catálogo están en **pesos argentinos (ARS)**: precios de lista en dólares convertidos
-> al dólar oficial BNA de octubre de 2026 ($1.540) y redondeados a los $1.000. Son aproximados y pueden
-> diferir de los precios de venta reales en Argentina (impuestos de importación, etc.).
-
 ## Capturas
 
 | Catálogo | Detalle del producto |
