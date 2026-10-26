@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [1.2.2] - 2026-10-26
+
+### Added
+- App publicada en Render: https://techmundo.onrender.com, con deploy automático desde GitHub Actions (Deploy Hook).
+
+### Fixed
+- Orden alfabético del catálogo: SQLite ordenaba distinguiendo mayúsculas ("ASUS" aparecía antes que "Acer").
+
 ## [1.2.1] - 2026-10-26
 
 ### Fixed

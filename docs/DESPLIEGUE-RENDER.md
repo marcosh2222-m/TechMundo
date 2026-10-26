@@ -1,5 +1,7 @@
 # Despliegue en Render — TechMundo
 
+**Sitio publicado:** https://techmundo.onrender.com
+
 Render publica la app gratis y **sin tarjeta de crédito** usando el `Dockerfile` del proyecto. GitHub Actions
 compila, prueba la imagen Docker y, si todo pasa, le pide a Render que publique la nueva versión.
 (La guía de Azure App Service sigue en [`DESPLIEGUE.md`](DESPLIEGUE.md) como alternativa.)

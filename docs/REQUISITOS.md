@@ -46,7 +46,7 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 | Repositorio GitHub con historial limpio (Conventional Commits) | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo) | Listo: commits por tema, ramas `main` / `develop`, issues (falta mergear un Pull Request) |
 | CI/CD con GitHub Actions | `.github/workflows/deploy.yml` | Listo: `build` + prueba de la imagen Docker en push/PR; deploy a Render desde `main` |
 | README profesional | `README.md` | Listo: descripción, stack, arquitectura, capturas, instalación, configuración |
-| App desplegada en URL pública | `Dockerfile`, `docs/DESPLIEGUE-RENDER.md` | Render (gratis, sin tarjeta) con deploy desde GitHub Actions |
+| App desplegada en URL pública | https://techmundo.onrender.com | Render (Docker) con deploy desde GitHub Actions |
 | Historias de usuario y DoD | `docs/HISTORIAS-DE-USUARIO.md` | Listo |
 | XML docs | `Services/IProductoService.cs`, `IVentaService.cs`, `CarritoState.cs` | Listo; genera `TechMundo.xml` |
 | Configuración por ambiente, User Secrets, logging, health check | `appsettings*.json`, `TechMundo.csproj`, `Program.cs` | Listo: `/health`, `ILogger<T>`, PIN fuera del código |
@@ -61,5 +61,5 @@ evaluación. Sirve como guía rápida para la defensa: cada fila dice qué archi
 | JS Interop implementado correctamente | 10 | `interop.js` como módulo ES6, `IJSObjectReference`, `DisposeAsync`, manejo de `JSException` |
 | Persistencia con EF Core: CRUD, paginación, búsqueda | 20 | `ProductoService`, `VentaService` (transacción), migraciones, seed |
 | Git: historial limpio, ramas, CI/CD | 10 | Repositorio en GitHub, ramas, issues, workflow en verde (+ un Pull Request a mergear) |
-| Aplicación desplegada y accesible | 5 | Render (`docs/DESPLIEGUE-RENDER.md`) |
+| Aplicación desplegada y accesible | 5 | https://techmundo.onrender.com |
 | README y documentación | 5 | `README.md`, `docs/`, `CHANGELOG.md`, XML docs |
