@@ -3,9 +3,11 @@
 Unidad 4, Clase 24. **15 minutos**: 10 de presentación + 5 de preguntas. La app tiene que estar
 publicada (Render; no se acepta localhost). Abrila 2–5 minutos antes: el plan gratis "duerme" la app.
 
+**App publicada:** https://techmundo.onrender.com · `/health` → `Healthy`
+
 ## Checklist de entrega (antes de la clase)
 
-- [ ] App desplegada en Render con URL funcionando (`/health` responde `Healthy`) — `docs/DESPLIEGUE-RENDER.md`
+- [x] App desplegada en Render: https://techmundo.onrender.com (`/health` responde `Healthy`)
 - [ ] Tablero Kanban en GitHub Projects con los 5 issues
 - [ ] Un Pull Request abierto, comentado y mergeado (`docs/GIT-FLOW.md`, paso 5)
 - [x] Repositorio GitHub **público** con historial de commits limpio (Conventional Commits)

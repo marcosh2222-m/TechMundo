@@ -66,7 +66,7 @@ Leyenda: ✅ Resuelto · ⚠️ Parcial / a revisar · ❌ Pendiente
 | **XML docs en el servicio** (`///`, `<summary>`, `<param>`) | ✅ | Completos en `IProductoService`, `IVentaService` y `CarritoState`; el build genera `TechMundo.xml` |
 | Historias de usuario (Scrum/Kanban) | ✅ | `docs/HISTORIAS-DE-USUARIO.md`: 5 historias + DoD + backlog de 18; plantillas de issues y PR |
 | Repositorio GitHub con historial limpio | ✅ | [marcosh2222-m/TechMundo](https://github.com/marcosh2222-m/TechMundo): Conventional Commits, ramas `main` / `develop` / `docs/*`, issues |
-| Aplicación desplegada en URL pública | ⚠️ (preparado) | Render con Docker: `docs/DESPLIEGUE-RENDER.md` (Azure como alternativa) |
+| Aplicación desplegada en URL pública | ✅ | https://techmundo.onrender.com (Render + Docker, deploy desde GitHub Actions) |
 | Health checks | ✅ | `/health` |
 | Logging con `ILogger<T>` | ✅ | Ya en `ProductoService` |
 | User Secrets en desarrollo | ✅ | `UserSecretsId` en el `.csproj`; el PIN de admin se configura con `dotnet user-secrets` (dev) o variable de entorno (Azure) |

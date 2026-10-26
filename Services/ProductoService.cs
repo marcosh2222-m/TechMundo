@@ -61,9 +61,10 @@ public class ProductoService : IProductoService
         // SQLite no puede ordenar por decimal directamente: se castea a double solo para el ORDER BY.
         var ordenada = orden switch
         {
-            OrdenProducto.PrecioMenor => query.OrderBy(p => (double)p.Precio).ThenBy(p => p.Nombre),
-            OrdenProducto.PrecioMayor => query.OrderByDescending(p => (double)p.Precio).ThenBy(p => p.Nombre),
-            _ => query.OrderBy(p => p.Nombre)
+            OrdenProducto.PrecioMenor => query.OrderBy(p => (double)p.Precio).ThenBy(p => p.Nombre.ToLower()),
+            OrdenProducto.PrecioMayor => query.OrderByDescending(p => (double)p.Precio).ThenBy(p => p.Nombre.ToLower()),
+            // ToLower(): SQLite ordena distinguiendo mayúsculas ("ASUS" quedaba antes que "Acer").
+            _ => query.OrderBy(p => p.Nombre.ToLower())
         };
 
         var items = await ordenada
