@@ -170,6 +170,46 @@ ASP.NET Core Identity, que está fuera del alcance de la materia.
 - **Base de datos en Render**: en el plan gratis la base SQLite vuelve a los datos de ejemplo cada vez que el
   servicio se duerme o se publica de nuevo; para producción real haría falta una base administrada (PostgreSQL / Azure SQL).
 
+## Dónde está cada requerimiento técnico
+
+Ruta en el código de cada requerimiento técnico del Proyecto Integrador (Unidad 4).
+
+### Unidad 1 — Componentes, formularios, routing y estado
+
+| Requerimiento | Ruta en el código |
+|---|---|
+| Mínimo 6 componentes Razor reutilizables | [`Components/`](Components) — 13 componentes: [`ProductoCard.razor`](Components/ProductoCard.razor) (`[Parameter]` + `EventCallback`), [`Modal.razor`](Components/Modal.razor) (`RenderFragment`), [`Paginacion.razor`](Components/Paginacion.razor), [`ProductoForm.razor`](Components/ProductoForm.razor), [`ConfirmDialog.razor`](Components/ConfirmDialog.razor), [`CarritoModal.razor`](Components/CarritoModal.razor), [`ProductoModal.razor`](Components/ProductoModal.razor), [`ProductoCarrusel.razor`](Components/ProductoCarrusel.razor), [`ProductoVidriera.razor`](Components/ProductoVidriera.razor), [`VentaDetalleModal.razor`](Components/VentaDetalleModal.razor), [`EstadisticaCard.razor`](Components/EstadisticaCard.razor), [`ImagenProducto.razor`](Components/ImagenProducto.razor), [`AlertError.razor`](Components/AlertError.razor) |
+| Formularios con EditForm y validación avanzada | [`Components/ProductoForm.razor`](Components/ProductoForm.razor) (`EditForm` + `DataAnnotationsValidator`), [`Models/Producto.cs`](Models/Producto.cs) (`[Range]`, `[StringLength]`, `[RegularExpression]`, `IValidatableObject.Validate`), [`Models/Validaciones.cs`](Models/Validaciones.cs) (patrones y atributo `[Obligatorio]`), [`Components/CarritoModal.razor`](Components/CarritoModal.razor) (nombre y email del cliente), [`Pages/Admin/Ventas.razor`](Pages/Admin/Ventas.razor) (rango de fechas) |
+| Routing con parámetros y navegación programática | [`Pages/Admin/EditarProducto.razor`](Pages/Admin/EditarProducto.razor) (`/admin/editar-producto/{Id:int}`), [`Pages/Catalogo/Index.razor`](Pages/Catalogo/Index.razor) (`/categoria/{CategoriaFiltro}`), [`Pages/Admin/Productos.razor`](Pages/Admin/Productos.razor) (`/admin/productos/{CategoriaFiltro}` y `NavigateTo`), [`Pages/Admin/NuevoProducto.razor`](Pages/Admin/NuevoProducto.razor) (`NavigateTo` al guardar) |
+| State Service con notificación reactiva | [`Services/CarritoState.cs`](Services/CarritoState.cs), [`Services/AdminAccessState.cs`](Services/AdminAccessState.cs), [`Services/CambiosCatalogo.cs`](Services/CambiosCatalogo.cs) (Singleton entre pestañas); registro en [`Program.cs`](Program.cs) |
+
+### Unidad 2 — Interfaz visual y JS Interop
+
+| Requerimiento | Ruta en el código |
+|---|---|
+| HTML5 semántico en todos los layouts | [`Shared/CatalogoLayout.razor`](Shared/CatalogoLayout.razor), [`Shared/AdminLayout.razor`](Shared/AdminLayout.razor), [`Shared/LayoutMinimo.razor`](Shared/LayoutMinimo.razor) (`header`, `nav`, `aside`, `main`, `footer`, `article`) |
+| CSS Isolation en al menos 3 componentes | 17 archivos `.razor.css`: 11 en [`Components/`](Components), 4 en [`Pages/`](Pages) (`Catalogo/Index`, `Admin/Dashboard`, `Admin/Productos`, `Admin/Ventas`) y 2 en [`Shared/`](Shared) (`CatalogoLayout`, `AdminLayout`); estilos globales en [`wwwroot/css/app.css`](wwwroot/css/app.css) |
+| Diseño responsive con Bootstrap 5 (mobile-first) | [`wwwroot/lib/`](wwwroot/lib) (Bootstrap 5.3.3 local), [`App.razor`](App.razor), [`wwwroot/css/app.css`](wwwroot/css/app.css) (variables y modo oscuro), media queries en los `.razor.css` |
+| JS Interop | [`wwwroot/js/interop.js`](wwwroot/js/interop.js) (módulo ES6); se importa con `IJSObjectReference` en [`Shared/CatalogoLayout.razor`](Shared/CatalogoLayout.razor) y [`Shared/AdminLayout.razor`](Shared/AdminLayout.razor) (modo oscuro), [`Components/ProductoCard.razor`](Components/ProductoCard.razor) (portapapeles) y [`Pages/Admin/Dashboard.razor`](Pages/Admin/Dashboard.razor) (notificación de stock bajo) |
+
+### Unidad 3 — Persistencia con EF Core
+
+| Requerimiento | Ruta en el código |
+|---|---|
+| EF Core con SQLite y DbContextFactory | [`Program.cs`](Program.cs) (`AddDbContextFactory` + `UseSqlite`), [`Data/TechMundoDbContext.cs`](Data/TechMundoDbContext.cs) |
+| Al menos 2 entidades con relación | [`Models/Categoria.cs`](Models/Categoria.cs), [`Models/Producto.cs`](Models/Producto.cs), [`Models/Venta.cs`](Models/Venta.cs) (`Venta` y `VentaItem`); relaciones en `OnModelCreating` de [`Data/TechMundoDbContext.cs`](Data/TechMundoDbContext.cs) |
+| Migraciones versionadas y datos de seed | [`Migrations/`](Migrations) (`Inicial`, `ImagenesLocales`), seed con `HasData` en [`Data/TechMundoDbContext.cs`](Data/TechMundoDbContext.cs), `Migrate()` al iniciar en [`Program.cs`](Program.cs) |
+| CRUD completo con paginación y búsqueda | [`Services/ProductoService.cs`](Services/ProductoService.cs) (`ObtenerPaginado` con `EF.Functions.Like` y `Skip/Take`, `Crear`, `Actualizar`, `Eliminar`), [`Services/VentaService.cs`](Services/VentaService.cs) (`RegistrarVenta` en transacción, `ObtenerPaginado`), [`Models/PagedResult.cs`](Models/PagedResult.cs); pantallas en [`Pages/Admin/`](Pages/Admin) |
+
+### Unidad 4 — Control de versiones y despliegue
+
+| Requerimiento | Ruta |
+|---|---|
+| Repositorio GitHub con historial limpio | Historial de commits del repo, ramas `main` / `develop`, [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md), [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE), [`docs/GIT-FLOW.md`](docs/GIT-FLOW.md) |
+| CI/CD con GitHub Actions | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), [`Dockerfile`](Dockerfile) |
+| README profesional con instrucciones de instalación | Este archivo ([Instalación](#instalación)), [`CHANGELOG.md`](CHANGELOG.md), [`docs/`](docs) |
+| Aplicación desplegada en URL pública | https://techmundo.onrender.com — guía en [`docs/DESPLIEGUE-RENDER.md`](docs/DESPLIEGUE-RENDER.md) |
+
 ## Documentación del proyecto (Unidad 4)
 
 | Documento | Contenido |
